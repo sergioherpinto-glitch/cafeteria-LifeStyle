@@ -5,7 +5,13 @@ const STORAGE_KEY = 'costureros_listings_v2';
 const MERC_STORAGE_KEY = 'costureros_mercaderia_v1';
 const MINE_KEY = 'costureros_mine_v2';
 
-const ADMIN_WHATSAPP = '936780260';
+// TODO: reemplazar por el correo real — a este correo llegan los reportes y las
+// confirmaciones de pago. No usamos WhatsApp aquí a propósito: así el número
+// personal de Sergio no queda expuesto en el código de la página.
+const ADMIN_EMAIL = 'admin@confeccioneslima.pe';
+// El número de Yape sí tiene que ser visible para que la gente pueda pagar —
+// eso lo exige Yape, no es una decisión de la app. Es una marca (Jasper
+// Legacy), no el WhatsApp personal de Sergio.
 const YAPE_NUMBER = '962667762';
 
 const PERFILES = ['Operario(a) de máquina', 'Manual de costura', 'Cortador(a)', 'Vendedor(a)'];
@@ -613,15 +619,19 @@ function openModalForEdit(listing) {
   openModal();
 }
 
+function openAdminEmail(subject, body) {
+  window.location.href = `mailto:${ADMIN_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
 function reportListing(sectionLabel, listing) {
-  const msg = `Quiero reportar este aviso de ${sectionLabel}: "${listing.contacto}" (publicado ${timeAgo(listing.fecha)}). Motivo: `;
-  window.open(`https://wa.me/51${ADMIN_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
+  const body = `Quiero reportar este aviso de ${sectionLabel}: "${listing.contacto}" (publicado ${timeAgo(listing.fecha)}).\n\nMotivo: `;
+  openAdminEmail(`Reporte de aviso — ${sectionLabel}`, body);
 }
 
 function confirmYapePayment(contactoInputId) {
   const contacto = document.getElementById(contactoInputId).value.trim();
-  const msg = `Hola, ya yapeé a ${YAPE_NUMBER} para destacar/mantener mi aviso${contacto ? ` ("${contacto}")` : ''}. Adjunto la captura del pago.`;
-  window.open(`https://wa.me/51${ADMIN_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
+  const body = `Hola, ya yapeé a ${YAPE_NUMBER} para destacar/mantener mi aviso${contacto ? ` ("${contacto}")` : ''}.\n\nVoy a adjuntar la captura del pago a este correo.`;
+  openAdminEmail('Confirmación de pago Yape', body);
 }
 
 function deleteListing(id) {
