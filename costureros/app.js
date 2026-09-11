@@ -5,6 +5,9 @@ const STORAGE_KEY = 'costureros_listings_v2';
 const MERC_STORAGE_KEY = 'costureros_mercaderia_v1';
 const MINE_KEY = 'costureros_mine_v2';
 
+// TODO: reemplazar por el WhatsApp real del administrador — ahí llegan los reportes.
+const ADMIN_WHATSAPP = '900000000';
+
 const PERFILES = ['Operario(a) de máquina', 'Manual de costura', 'Cortador(a)', 'Vendedor(a)'];
 
 const PRENDAS = [
@@ -113,7 +116,7 @@ const SEED_DATA = [
     maquinas: ['Recta', 'Remalle', 'Recubridora'], operaciones: ['Cerrado de costado', 'Pegado de manga'], laborManual: [],
     tamanoTaller: '', modalidadPago: 'Destajo por operación', pago: '',
     disponibilidad: ['Medio tiempo / días específicos'],
-    zona: 'Ate', contacto: 'Rosa M.', whatsapp: '944000005',
+    zona: 'Ate', zonasTrabajo: ['Santa Anita', 'Vitarte', 'Gamarra'], contacto: 'Rosa M.', whatsapp: '944000005',
     descripcion: 'Trabajé en talleres de Santa Anita, Vitarte y en Gamarra. Solo trabajo lunes a miércoles.', urgente: false,
     documento: '45678912', documentoTipo: 'DNI',
     fecha: Date.now() - 1000 * 60 * 60 * 8,
@@ -222,8 +225,20 @@ function readAndCompressImage(file, maxDim, quality) {
 
 // Controla un selector de "hasta MAX_PHOTOS fotos" para un formulario: comprime
 // cada imagen al elegirla, dibuja las miniaturas, y permite quitarlas una por una.
-function makePhotoPicker(inputId, listId, labelId) {
+// confirmWrapId (opcional) es una casilla "mis fotos son apropiadas" que solo se
+// pide (y solo bloquea el envío) cuando hay al menos una foto agregada.
+function makePhotoPicker(inputId, listId, labelId, confirmWrapId) {
   let photos = [];
+
+  function updateConfirmCheckbox() {
+    if (!confirmWrapId) return;
+    const wrap = document.getElementById(confirmWrapId);
+    const checkbox = wrap.querySelector('input');
+    const show = photos.length > 0;
+    wrap.classList.toggle('hidden', !show);
+    checkbox.required = show;
+    if (!show) checkbox.checked = false;
+  }
 
   function renderThumbs() {
     const list = document.getElementById(listId);
@@ -245,6 +260,7 @@ function makePhotoPicker(inputId, listId, labelId) {
       list.appendChild(thumb);
     });
     document.getElementById(labelId).classList.toggle('hidden', photos.length >= MAX_PHOTOS);
+    updateConfirmCheckbox();
   }
 
   document.getElementById(inputId).addEventListener('change', async (e) => {
@@ -440,13 +456,13 @@ function matchesFilters(listing) {
 
   if (activeTipo && listing.tipo !== activeTipo) return false;
   if (perfil && !listing.perfiles.includes(perfil)) return false;
-  if (zona && listing.zona !== zona) return false;
+  if (zona && listing.zona !== zona && !(listing.zonasTrabajo || []).includes(zona)) return false;
   if (soloUrgente && !listing.urgente) return false;
   if (q) {
     const haystack = [
       listing.contacto, listing.descripcion, listing.zona, listing.experiencia,
       listing.tamanoTaller, listing.modalidadPago,
-      ...listing.perfiles, ...listing.prendas, ...listing.telas,
+      ...listing.perfiles, ...listing.prendas, ...listing.telas, ...(listing.zonasTrabajo || []),
       ...listing.maquinas, ...listing.operaciones, ...listing.laborManual, ...listing.disponibilidad,
     ].join(' ').toLowerCase();
     if (!haystack.includes(q)) return false;
@@ -484,7 +500,9 @@ function render() {
 
     node.querySelector('.urgente-badge').classList.toggle('hidden', !listing.urgente);
     node.querySelector('.contacto-name').textContent = listing.contacto;
-    node.querySelector('.zona-line span').textContent = `${listing.zona} · ${timeAgo(listing.fecha)}`;
+    node.querySelector('.zona-line span').textContent = listing.tipo === 'busco'
+      ? `Vive en ${listing.zona} · ${timeAgo(listing.fecha)}`
+      : `${listing.zona} · ${timeAgo(listing.fecha)}`;
     renderDocLine(node, listing);
 
     appendChips(node.querySelector('.perfil-chips'), listing.perfiles, 'chip chip-perfil');
@@ -501,6 +519,7 @@ function render() {
     const metaLines = node.querySelector('.meta-lines');
     appendMetaLine(metaLines, metaTpl, listing.experiencia ? `Experiencia: ${listing.experiencia}` : '');
     appendMetaLine(metaLines, metaTpl, listing.tipo === 'ofrezco' && listing.tamanoTaller ? listing.tamanoTaller : '');
+    appendMetaLine(metaLines, metaTpl, listing.tipo === 'busco' && listing.zonasTrabajo && listing.zonasTrabajo.length ? `También trabajaría en: ${listing.zonasTrabajo.join(', ')}` : '');
 
     const pagoParts = [listing.modalidadPago, listing.pago].filter(Boolean).join(' · ');
     const pagoEl = node.querySelector('.pago-text');
@@ -526,6 +545,10 @@ function updatePerfilSections() {
 function updateTallerSection() {
   const esOfrezco = document.querySelector('input[name="tipo"]:checked').value === 'ofrezco';
   document.getElementById('tallerSection').classList.toggle('hidden', !esOfrezco);
+  // Un taller tiene una sola ubicación fija; un costurero/a tiene dónde vive
+  // y, aparte, las zonas donde además le gustaría trabajar (pueden ser varias).
+  document.getElementById('formZonaLabel').textContent = esOfrezco ? 'Zona (dónde está el taller)' : 'Distrito donde vives';
+  document.getElementById('zonaTrabajoSection').classList.toggle('hidden', esOfrezco);
 }
 
 function openModal() { document.getElementById('modal').classList.add('open'); }
@@ -573,6 +596,7 @@ function openModalForEdit(listing) {
   document.querySelectorAll('#disponibilidadChips input').forEach(cb => {
     cb.checked = listing.disponibilidad.includes(cb.value);
   });
+  populateChipGroup('zonaTrabajoChips', ZONAS, listing.zonasTrabajo || [], 'zonaTrabajoOtro', 'zonaTrabajoOtroField');
   document.getElementById('formContacto').value = listing.contacto;
   document.getElementById('formWhatsapp').value = listing.whatsapp;
   document.getElementById('formDocumento').value = listing.documento || '';
@@ -587,6 +611,11 @@ function openModalForEdit(listing) {
   document.getElementById('modalTitle').textContent = 'Editar aviso';
   document.getElementById('submitBtn').textContent = 'Guardar cambios';
   openModal();
+}
+
+function reportListing(sectionLabel, listing) {
+  const msg = `Quiero reportar este aviso de ${sectionLabel}: "${listing.contacto}" (publicado ${timeAgo(listing.fecha)}). Motivo: `;
+  window.open(`https://wa.me/51${ADMIN_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
 function deleteListing(id) {
@@ -613,8 +642,9 @@ function initEmpleosForm() {
   wireOtroToggle('maquinaChips', 'maquinaOtroField');
   wireOtroToggle('operacionChips', 'operacionOtroField');
   wireOtroToggle('manualChips', 'manualOtroField');
+  wireOtroToggle('zonaTrabajoChips', 'zonaTrabajoOtroField');
 
-  formPhotoPicker = makePhotoPicker('formFoto', 'formFotoPreviewList', 'formFotoLabel');
+  formPhotoPicker = makePhotoPicker('formFoto', 'formFotoPreviewList', 'formFotoLabel', 'formFotoConfirmWrap');
 
   document.getElementById('grid').addEventListener('click', (e) => {
     const card = e.target.closest('.card');
@@ -625,6 +655,9 @@ function initEmpleosForm() {
       if (listing) openModalForEdit(listing);
     } else if (e.target.closest('.delete-btn')) {
       deleteListing(id);
+    } else if (e.target.closest('.report-link')) {
+      const listing = listings.find(l => l.id === id);
+      if (listing) reportListing('Empleos', listing);
     }
   });
 
@@ -654,6 +687,7 @@ function initEmpleosForm() {
       pago: document.getElementById('formPago').value.trim(),
       disponibilidad: checkedValues('disponibilidadChips'),
       zona: resolveZona('formZona', 'zonaOtro'),
+      zonasTrabajo: tipo === 'busco' ? resolveChipValues('zonaTrabajoChips', 'zonaTrabajoOtro') : [],
       contacto: document.getElementById('formContacto').value.trim(),
       whatsapp: whatsappDigits,
       descripcion: document.getElementById('formDescripcion').value.trim(),
@@ -887,7 +921,7 @@ function initMercForm() {
   wireOtroToggle('mercColorChips', 'mercColorOtroField');
   wireOtroToggle('mercModalidadVentaChips', 'mercModalidadVentaOtroField');
 
-  mercPhotoPicker = makePhotoPicker('mercFoto', 'mercFotoPreviewList', 'mercFotoLabel');
+  mercPhotoPicker = makePhotoPicker('mercFoto', 'mercFotoPreviewList', 'mercFotoLabel', 'mercFotoConfirmWrap');
 
   document.getElementById('mercGrid').addEventListener('click', (e) => {
     const card = e.target.closest('.card');
@@ -898,6 +932,9 @@ function initMercForm() {
       if (listing) openMercModalForEdit(listing);
     } else if (e.target.closest('.delete-btn')) {
       deleteMercListing(id);
+    } else if (e.target.closest('.report-link')) {
+      const listing = mercListings.find(l => l.id === id);
+      if (listing) reportListing('Mercadería', listing);
     }
   });
 
@@ -1019,6 +1056,7 @@ function init() {
   buildChipGroup('operacionChips', OPERACIONES);
   buildChipGroup('manualChips', LABOR_MANUAL);
   buildChipGroup('disponibilidadChips', DISPONIBILIDAD);
+  buildChipGroup('zonaTrabajoChips', ZONAS);
 
   updatePerfilSections();
   updateTallerSection();
