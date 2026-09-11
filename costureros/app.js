@@ -2,17 +2,21 @@
 // Cada aviso: ver SEED_DATA más abajo para la forma completa del objeto.
 
 const STORAGE_KEY = 'costureros_listings_v2';
+const MINE_KEY = 'costureros_mine_v2';
 
-const PERFILES = ['Operario(a) de máquina', 'Manual de costura', 'Cortador(a)'];
+const PERFILES = ['Operario(a) de máquina', 'Manual de costura', 'Cortador(a)', 'Vendedor(a)'];
 
 const PRENDAS = [
   'Polos/Camisetas', 'Camisas', 'Pantalones/Jeans', 'Ropa deportiva',
   'Ropa interior/Lencería', 'Uniformes', 'Chompas/Tejido', 'Casacas', 'Otra'
 ];
 
-const TELAS = ['Tela plana', 'Tela punto (jersey)', 'Denim/Jean', 'Tejido grueso', 'Otra'];
+const TELAS = ['Tela punto (polos, buzos)', 'Tela plana', 'Denim/Jean', 'Drill (ropa de trabajo)', 'Tejido grueso', 'Otra'];
 
-const EXPERIENCIA = ['Sin experiencia', 'Menos de 1 año', '1 a 3 años', '3 a 5 años', 'Más de 5 años'];
+const EXPERIENCIA = [
+  'Sin experiencia', 'Sin experiencia, con ganas de aprender',
+  'Menos de 1 año', '1 a 3 años', '3 a 5 años', 'Más de 5 años'
+];
 
 const MAQUINAS = [
   'Recta', 'Remalle', 'Recubridora', 'Collaretera', 'Ojaladora',
@@ -26,11 +30,11 @@ const OPERACIONES = [
 
 const LABOR_MANUAL = ['Habilitado', 'Acabados', 'Planchado/Vaporizado', 'Limpieza/Deshilachado', 'Empaquetado', 'Otra'];
 
-const TAMANO_TALLER = ['Taller en casa (pequeño)', 'Taller mediano', 'Taller grande / Fábrica'];
+const TAMANO_TALLER = ['Taller pequeño', 'Taller mediano', 'Taller grande / Fábrica'];
 
-const MODALIDAD_PAGO = ['Jornal (sueldo semanal)', 'Destajo por prenda (armado completo)', 'Destajo por operación', 'Pago por día', 'A tratar'];
+const MODALIDAD_PAGO = ['Jornal (sueldo semanal)', 'Destajo por prenda (armado completo)', 'Destajo por operación', 'Pago por días trabajados', 'A tratar'];
 
-const DISPONIBILIDAD = ['Tiempo completo (L-V)', 'Medio tiempo / días específicos', 'Fines de semana', 'Turno noche', 'Amanecidas (urgente)'];
+const DISPONIBILIDAD = ['Tiempo completo (L-S)', 'Medio tiempo / días específicos', 'Fines de semana', 'Turno noche', 'Amanecidas'];
 
 const ZONAS = [
   'Santa Anita', 'Ate', 'La Molina', 'San Luis', 'Vitarte',
@@ -40,27 +44,27 @@ const ZONAS = [
 const SEED_DATA = [
   {
     tipo: 'ofrezco', perfiles: ['Operario(a) de máquina'],
-    prendas: ['Polos/Camisetas'], telas: ['Tela punto (jersey)'], experiencia: '1 a 3 años',
+    prendas: ['Polos/Camisetas'], telas: ['Tela punto (polos, buzos)'], experiencia: '1 a 3 años',
     maquinas: ['Recta', 'Remalle'], operaciones: ['Cerrado de costado', 'Pegado de manga'], laborManual: [],
     tamanoTaller: 'Taller mediano', modalidadPago: 'Jornal (sueldo semanal)', pago: 'S/1300 + beneficios',
-    disponibilidad: ['Tiempo completo (L-V)'],
+    disponibilidad: ['Tiempo completo (L-S)'],
     zona: 'Santa Anita', contacto: 'Taller Mayorazgo Chico', whatsapp: '977000001',
     descripcion: 'Experiencia en recta plana y remalle para polos en tela punto.', urgente: true,
     fecha: Date.now() - 1000 * 60 * 60 * 3,
   },
   {
     tipo: 'ofrezco', perfiles: ['Manual de costura'],
-    prendas: ['Uniformes'], telas: ['Tela plana'], experiencia: '',
+    prendas: ['Uniformes'], telas: ['Tela plana'], experiencia: 'Sin experiencia, con ganas de aprender',
     maquinas: [], operaciones: [], laborManual: ['Habilitado', 'Acabados'],
     tamanoTaller: 'Taller mediano', modalidadPago: 'Destajo por operación', pago: 'A tratar',
-    disponibilidad: ['Tiempo completo (L-V)'],
+    disponibilidad: ['Tiempo completo (L-S)'],
     zona: 'Santa Anita', contacto: 'Clínica Municipal - Taller', whatsapp: '955000002',
-    descripcion: 'También se necesita ayudante de línea, de 18 a 28 años.', urgente: true,
+    descripcion: 'También se necesita ayudante de línea, de 18 a 28 años. Se enseña.', urgente: true,
     fecha: Date.now() - 1000 * 60 * 60 * 5,
   },
   {
     tipo: 'ofrezco', perfiles: ['Operario(a) de máquina'],
-    prendas: ['Ropa deportiva', 'Polos/Camisetas'], telas: ['Tela punto (jersey)', 'Tejido grueso'], experiencia: 'Sin experiencia',
+    prendas: ['Ropa deportiva', 'Polos/Camisetas'], telas: ['Tela punto (polos, buzos)', 'Tejido grueso'], experiencia: 'Sin experiencia',
     maquinas: ['Recta', 'Remalle', 'Recubridora'], operaciones: [], laborManual: [],
     tamanoTaller: 'Taller grande / Fábrica', modalidadPago: 'A tratar', pago: 'Con o sin experiencia',
     disponibilidad: [],
@@ -73,14 +77,14 @@ const SEED_DATA = [
     prendas: ['Camisas'], telas: ['Tela plana'], experiencia: '3 a 5 años',
     maquinas: ['Recta', 'Remalle'], operaciones: ['Armado completo'], laborManual: [],
     tamanoTaller: 'Taller mediano', modalidadPago: 'Destajo por prenda (armado completo)', pago: 'Buen sueldo',
-    disponibilidad: ['Tiempo completo (L-V)'],
+    disponibilidad: ['Tiempo completo (L-S)'],
     zona: 'Ate', contacto: 'Confecciones Javier Prado', whatsapp: '977000004',
     descripcion: 'Zona Prolongación Javier Prado, costado del estadio de la U.', urgente: false,
     fecha: Date.now() - 1000 * 60 * 60 * 30,
   },
   {
     tipo: 'busco', perfiles: ['Operario(a) de máquina'],
-    prendas: ['Polos/Camisetas', 'Ropa deportiva'], telas: ['Tela punto (jersey)'], experiencia: 'Más de 5 años',
+    prendas: ['Polos/Camisetas', 'Ropa deportiva'], telas: ['Tela punto (polos, buzos)'], experiencia: 'Más de 5 años',
     maquinas: ['Recta', 'Remalle', 'Recubridora'], operaciones: ['Cerrado de costado', 'Pegado de manga'], laborManual: [],
     tamanoTaller: '', modalidadPago: 'Destajo por operación', pago: '',
     disponibilidad: ['Medio tiempo / días específicos'],
@@ -92,16 +96,28 @@ const SEED_DATA = [
     tipo: 'busco', perfiles: ['Cortador(a)'],
     prendas: ['Pantalones/Jeans'], telas: ['Denim/Jean'], experiencia: '3 a 5 años',
     maquinas: [], operaciones: [], laborManual: [],
-    tamanoTaller: '', modalidadPago: 'Pago por día', pago: '',
+    tamanoTaller: '', modalidadPago: 'Pago por días trabajados', pago: '',
     disponibilidad: ['Fines de semana', 'Turno noche'],
     zona: 'San Juan de Lurigancho', contacto: 'Jhon P.', whatsapp: '999000006',
     descripcion: 'Busco taller estable, experiencia en corte y confección. Disponible fines de semana o de noche.', urgente: false,
     fecha: Date.now() - 1000 * 60 * 60 * 50,
   },
+  {
+    tipo: 'busco', perfiles: ['Vendedor(a)'],
+    prendas: ['Ropa deportiva', 'Casacas'], telas: [], experiencia: '3 a 5 años',
+    maquinas: [], operaciones: [], laborManual: [],
+    tamanoTaller: '', modalidadPago: 'Jornal (sueldo semanal)', pago: '',
+    disponibilidad: ['Fines de semana'],
+    zona: 'Gamarra', contacto: 'Milagros T.', whatsapp: '933000007',
+    descripcion: 'Experiencia vendiendo ropa deportiva de marca en Gamarra, buen trato al cliente.', urgente: false,
+    fecha: Date.now() - 1000 * 60 * 60 * 40,
+  },
 ];
 
 let listings = loadListings();
+let mineIds = loadMineIds();
 let activeTipo = '';
+let editingId = null;
 
 function loadListings() {
   try {
@@ -113,13 +129,19 @@ function loadListings() {
 }
 
 function loadListingsRaw() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-  } catch (e) { return []; }
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch (e) { return []; }
 }
 
 function saveListings(data) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) { /* ignore */ }
+}
+
+function loadMineIds() {
+  try { return JSON.parse(localStorage.getItem(MINE_KEY)) || []; } catch (e) { return []; }
+}
+
+function saveMineIds() {
+  try { localStorage.setItem(MINE_KEY, JSON.stringify(mineIds)); } catch (e) { /* ignore */ }
 }
 
 function fillSelect(select, options) {
@@ -147,6 +169,7 @@ function skillTags(listing) {
   }
   if (listing.laborManual.length) return listing.laborManual;
   if (listing.perfiles.includes('Cortador(a)')) return ['Corte de tela'];
+  if (listing.perfiles.includes('Vendedor(a)')) return ['Venta de ropa'];
   return listing.prendas;
 }
 
@@ -219,6 +242,11 @@ function render() {
 
   filtered.forEach(listing => {
     const node = tpl.content.cloneNode(true);
+    const article = node.querySelector('.card');
+    article.dataset.id = listing.id;
+
+    node.querySelector('.owner-actions').classList.toggle('hidden', !mineIds.includes(listing.id));
+
     const tipoBadge = node.querySelector('.tipo-badge');
     tipoBadge.textContent = listing.tipo === 'ofrezco' ? 'Busca personal' : 'Busca trabajo';
     tipoBadge.classList.add(listing.tipo === 'ofrezco' ? 'badge-ofrezco' : 'badge-busca');
@@ -271,6 +299,41 @@ function checkedValues(containerId) {
   return Array.from(document.querySelectorAll(`#${containerId} input:checked`)).map(i => i.value);
 }
 
+// Convierte los checkboxes marcados en valores finales: si "Otra" está
+// marcada, la reemplaza por lo que la persona escribió en el campo de texto.
+function resolveChipValues(containerId, otroInputId) {
+  const checked = checkedValues(containerId);
+  if (!checked.includes('Otra')) return checked;
+  const custom = document.getElementById(otroInputId).value.trim();
+  const withoutOtra = checked.filter(v => v !== 'Otra');
+  if (!custom) return checked;
+  const customValues = custom.split(',').map(s => s.trim()).filter(Boolean);
+  return [...withoutOtra, ...customValues];
+}
+
+function populateChipGroup(containerId, canonicalList, storedValues, otroInputId, otroFieldId) {
+  const canonicalSet = new Set(canonicalList);
+  const leftovers = storedValues.filter(v => !canonicalSet.has(v));
+  const hasOtra = leftovers.length > 0;
+  document.querySelectorAll(`#${containerId} input`).forEach(cb => {
+    cb.checked = storedValues.includes(cb.value) || (cb.value === 'Otra' && hasOtra);
+  });
+  document.getElementById(otroInputId).value = leftovers.join(', ');
+  document.getElementById(otroFieldId).classList.toggle('hidden', !hasOtra);
+}
+
+function wireOtroToggle(containerId, otroFieldId) {
+  const otraCheckbox = document.querySelector(`#${containerId} input[value="Otra"]`);
+  if (!otraCheckbox) return;
+  otraCheckbox.addEventListener('change', () => {
+    document.getElementById(otroFieldId).classList.toggle('hidden', !otraCheckbox.checked);
+  });
+}
+
+function hideAllOtroFields() {
+  document.querySelectorAll('.otro-field').forEach(f => f.classList.add('hidden'));
+}
+
 function updatePerfilSections() {
   const perfiles = checkedValues('perfilChips');
   document.getElementById('maquinaSection').classList.toggle('hidden', !perfiles.includes('Operario(a) de máquina'));
@@ -282,18 +345,79 @@ function updateTallerSection() {
   document.getElementById('tallerSection').classList.toggle('hidden', !esOfrezco);
 }
 
+function updateZonaOtro() {
+  document.getElementById('zonaOtroField').classList.toggle('hidden', document.getElementById('formZona').value !== 'Otro');
+}
+
 function openModal() { document.getElementById('modal').classList.add('open'); }
 function closeModal() { document.getElementById('modal').classList.remove('open'); }
 
-function resetForm(form) {
+function openModalForCreate() {
+  editingId = null;
+  const form = document.getElementById('publishForm');
   form.reset();
-  document.querySelectorAll('#publishForm input[type=checkbox]').forEach(i => i.checked = false);
+  hideAllOtroFields();
   updatePerfilSections();
   updateTallerSection();
+  updateZonaOtro();
+  document.getElementById('modalTitle').textContent = 'Publicar aviso';
+  document.getElementById('submitBtn').textContent = 'Publicar aviso';
+  openModal();
+}
+
+function openModalForEdit(listing) {
+  editingId = listing.id;
+  const form = document.getElementById('publishForm');
+  form.reset();
+
+  document.querySelector(`input[name="tipo"][value="${listing.tipo}"]`).checked = true;
+
+  document.querySelectorAll('#perfilChips input').forEach(cb => { cb.checked = listing.perfiles.includes(cb.value); });
+
+  populateChipGroup('prendaChips', PRENDAS, listing.prendas, 'prendaOtro', 'prendaOtroField');
+  populateChipGroup('telaChips', TELAS, listing.telas, 'telaOtro', 'telaOtroField');
+  document.getElementById('formExperiencia').value = listing.experiencia || '';
+  populateChipGroup('maquinaChips', MAQUINAS, listing.maquinas, 'maquinaOtro', 'maquinaOtroField');
+  populateChipGroup('operacionChips', OPERACIONES, listing.operaciones, 'operacionOtro', 'operacionOtroField');
+  populateChipGroup('manualChips', LABOR_MANUAL, listing.laborManual, 'manualOtro', 'manualOtroField');
+  document.getElementById('formTamanoTaller').value = listing.tamanoTaller || '';
+
+  if (ZONAS.includes(listing.zona)) {
+    document.getElementById('formZona').value = listing.zona;
+    document.getElementById('zonaOtro').value = '';
+  } else {
+    document.getElementById('formZona').value = 'Otro';
+    document.getElementById('zonaOtro').value = listing.zona;
+  }
+  document.getElementById('formModalidadPago').value = listing.modalidadPago || '';
+  document.getElementById('formPago').value = listing.pago || '';
+  Array.from(document.querySelectorAll('#disponibilidadChips input')).forEach(cb => {
+    cb.checked = listing.disponibilidad.includes(cb.value);
+  });
+  document.getElementById('formContacto').value = listing.contacto;
+  document.getElementById('formWhatsapp').value = listing.whatsapp;
+  document.getElementById('formDescripcion').value = listing.descripcion || '';
+  document.getElementById('formUrgente').checked = listing.urgente;
+
+  updatePerfilSections();
+  updateTallerSection();
+  updateZonaOtro();
+  document.getElementById('modalTitle').textContent = 'Editar aviso';
+  document.getElementById('submitBtn').textContent = 'Guardar cambios';
+  openModal();
+}
+
+function deleteListing(id) {
+  if (!confirm('¿Seguro que quieres eliminar este aviso?')) return;
+  listings = listings.filter(l => l.id !== id);
+  mineIds = mineIds.filter(i => i !== id);
+  saveListings(listings);
+  saveMineIds();
+  render();
 }
 
 function initFormListeners() {
-  document.getElementById('fab').addEventListener('click', openModal);
+  document.getElementById('fab').addEventListener('click', openModalForCreate);
   document.getElementById('closeModal').addEventListener('click', closeModal);
   document.getElementById('modal').addEventListener('click', (e) => {
     if (e.target.id === 'modal') closeModal();
@@ -301,6 +425,25 @@ function initFormListeners() {
 
   document.querySelectorAll('#perfilChips input').forEach(i => i.addEventListener('change', updatePerfilSections));
   document.querySelectorAll('input[name="tipo"]').forEach(i => i.addEventListener('change', updateTallerSection));
+  document.getElementById('formZona').addEventListener('change', updateZonaOtro);
+
+  wireOtroToggle('prendaChips', 'prendaOtroField');
+  wireOtroToggle('telaChips', 'telaOtroField');
+  wireOtroToggle('maquinaChips', 'maquinaOtroField');
+  wireOtroToggle('operacionChips', 'operacionOtroField');
+  wireOtroToggle('manualChips', 'manualOtroField');
+
+  document.getElementById('grid').addEventListener('click', (e) => {
+    const card = e.target.closest('.card');
+    if (!card) return;
+    const id = card.dataset.id;
+    if (e.target.closest('.edit-btn')) {
+      const listing = listings.find(l => l.id === id);
+      if (listing) openModalForEdit(listing);
+    } else if (e.target.closest('.delete-btn')) {
+      deleteListing(id);
+    }
+  });
 
   document.getElementById('publishForm').addEventListener('submit', (e) => {
     e.preventDefault();
@@ -310,32 +453,40 @@ function initFormListeners() {
 
     const tipo = document.querySelector('input[name="tipo"]:checked').value;
     const perfiles = checkedValues('perfilChips');
+    const zonaSelect = document.getElementById('formZona').value;
+    const zona = zonaSelect === 'Otro' ? (document.getElementById('zonaOtro').value.trim() || 'Otro') : zonaSelect;
 
-    const listing = {
-      id: 'l-' + Date.now(),
+    const data = {
       tipo,
       perfiles,
-      prendas: checkedValues('prendaChips'),
-      telas: checkedValues('telaChips'),
+      prendas: resolveChipValues('prendaChips', 'prendaOtro'),
+      telas: resolveChipValues('telaChips', 'telaOtro'),
       experiencia: document.getElementById('formExperiencia').value,
-      maquinas: perfiles.includes('Operario(a) de máquina') ? checkedValues('maquinaChips') : [],
-      operaciones: perfiles.includes('Operario(a) de máquina') ? checkedValues('operacionChips') : [],
-      laborManual: perfiles.includes('Manual de costura') ? checkedValues('manualChips') : [],
+      maquinas: perfiles.includes('Operario(a) de máquina') ? resolveChipValues('maquinaChips', 'maquinaOtro') : [],
+      operaciones: perfiles.includes('Operario(a) de máquina') ? resolveChipValues('operacionChips', 'operacionOtro') : [],
+      laborManual: perfiles.includes('Manual de costura') ? resolveChipValues('manualChips', 'manualOtro') : [],
       tamanoTaller: tipo === 'ofrezco' ? document.getElementById('formTamanoTaller').value : '',
       modalidadPago: document.getElementById('formModalidadPago').value,
       pago: document.getElementById('formPago').value.trim(),
       disponibilidad: checkedValues('disponibilidadChips'),
-      zona: document.getElementById('formZona').value,
+      zona,
       contacto: document.getElementById('formContacto').value.trim(),
       whatsapp: whatsappDigits,
       descripcion: document.getElementById('formDescripcion').value.trim(),
       urgente: document.getElementById('formUrgente').checked,
-      fecha: Date.now(),
     };
 
-    listings.unshift(listing);
+    if (editingId) {
+      const idx = listings.findIndex(l => l.id === editingId);
+      if (idx !== -1) listings[idx] = { ...listings[idx], ...data };
+    } else {
+      const id = 'l-' + Date.now();
+      listings.unshift({ id, ...data, fecha: Date.now() });
+      mineIds.push(id);
+      saveMineIds();
+    }
+
     saveListings(listings);
-    resetForm(e.target);
     closeModal();
     render();
   });
@@ -388,6 +539,7 @@ function init() {
 
   updatePerfilSections();
   updateTallerSection();
+  updateZonaOtro();
   initFormListeners();
   initFilterListeners();
   initShare();
