@@ -74,6 +74,7 @@ const SEED_DATA = [
     disponibilidad: ['Tiempo completo (L-S)'],
     zona: 'Santa Anita', contacto: 'Taller Mayorazgo Chico', whatsapp: '977000001',
     descripcion: 'Experiencia en recta plana y remalle para polos en tela punto.', urgente: true,
+    documento: '20601234567', documentoTipo: 'RUC',
     fecha: Date.now() - 1000 * 60 * 60 * 3,
   },
   {
@@ -114,6 +115,7 @@ const SEED_DATA = [
     disponibilidad: ['Medio tiempo / días específicos'],
     zona: 'Ate', contacto: 'Rosa M.', whatsapp: '944000005',
     descripcion: 'Trabajé en talleres de Santa Anita, Vitarte y en Gamarra. Solo trabajo lunes a miércoles.', urgente: false,
+    documento: '45678912', documentoTipo: 'DNI',
     fecha: Date.now() - 1000 * 60 * 60 * 8,
   },
   {
@@ -144,6 +146,7 @@ const MERC_SEED_DATA = [
     cantidad: '200 unidades', ventaTipo: 'Mayor y menor', modalidadVenta: ['Recojo en tienda/domicilio', 'Envío a nivel nacional'],
     precio: 'S/25 por unidad al por mayor', zona: 'Gamarra', contacto: 'Manuel R.', whatsapp: '911000001',
     descripcion: 'Chompas de tejido grueso, varios colores. Mando fotos y video por WhatsApp.',
+    documento: '20601987654', documentoTipo: 'RUC',
     urgente: false, fecha: Date.now() - 1000 * 60 * 60 * 10,
   },
   {
@@ -305,6 +308,29 @@ function resolveZona(selectId, otroId) {
   return document.getElementById(otroId).value.trim() || 'Otro';
 }
 
+// Un RUC (11 dígitos) es información pública en el Perú (registro SUNAT), así
+// que se puede mostrar completo. Un DNI (8 dígitos) es un dato personal — nunca
+// se muestra el número, solo que la persona lo registró. Devuelve null si lo
+// que escribieron no tiene ni 8 ni 11 dígitos (para pedir que lo corrijan).
+function parseDocumento(raw) {
+  const digits = (raw || '').replace(/\D/g, '');
+  if (digits.length === 0) return { tipo: '', valor: '' };
+  if (digits.length === 8) return { tipo: 'DNI', valor: digits };
+  if (digits.length === 11) return { tipo: 'RUC', valor: digits };
+  return null;
+}
+
+function renderDocLine(node, listing) {
+  const docEl = node.querySelector('.doc-line');
+  if (listing.documentoTipo === 'RUC') {
+    docEl.querySelector('span').textContent = `RUC: ${listing.documento}`;
+  } else if (listing.documentoTipo === 'DNI') {
+    docEl.querySelector('span').textContent = 'DNI registrado';
+  } else {
+    docEl.remove();
+  }
+}
+
 function appendChips(container, values, className) {
   values.forEach(v => {
     const chip = document.createElement('span');
@@ -398,6 +424,7 @@ function render() {
     node.querySelector('.urgente-badge').classList.toggle('hidden', !listing.urgente);
     node.querySelector('.contacto-name').textContent = listing.contacto;
     node.querySelector('.zona-line span').textContent = `${listing.zona} · ${timeAgo(listing.fecha)}`;
+    renderDocLine(node, listing);
 
     appendChips(node.querySelector('.perfil-chips'), listing.perfiles, 'chip chip-perfil');
 
@@ -486,6 +513,7 @@ function openModalForEdit(listing) {
   });
   document.getElementById('formContacto').value = listing.contacto;
   document.getElementById('formWhatsapp').value = listing.whatsapp;
+  document.getElementById('formDocumento').value = listing.documento || '';
   document.getElementById('formDescripcion').value = listing.descripcion || '';
   document.getElementById('formUrgente').checked = listing.urgente;
 
@@ -540,6 +568,9 @@ function initEmpleosForm() {
     const whatsappDigits = document.getElementById('formWhatsapp').value.replace(/\D/g, '');
     if (whatsappDigits.length !== 9) { alert('Ingresa un número de WhatsApp válido de 9 dígitos.'); return; }
 
+    const doc = parseDocumento(document.getElementById('formDocumento').value);
+    if (doc === null) { alert('El DNI debe tener 8 dígitos y el RUC 11. Déjalo vacío si prefieres no ponerlo.'); return; }
+
     const tipo = document.querySelector('input[name="tipo"]:checked').value;
     const perfiles = checkedValues('perfilChips');
 
@@ -561,6 +592,8 @@ function initEmpleosForm() {
       whatsapp: whatsappDigits,
       descripcion: document.getElementById('formDescripcion').value.trim(),
       urgente: document.getElementById('formUrgente').checked,
+      documento: doc.valor,
+      documentoTipo: doc.tipo,
     };
 
     if (editingId) {
@@ -663,6 +696,7 @@ function mercRender() {
     node.querySelector('.urgente-badge').classList.toggle('hidden', !listing.urgente);
     node.querySelector('.contacto-name').textContent = listing.contacto;
     node.querySelector('.zona-line span').textContent = `${listing.zona} · ${timeAgo(listing.fecha)}`;
+    renderDocLine(node, listing);
 
     appendChips(node.querySelector('.item-chips'), listing.items, 'chip');
     appendChips(node.querySelector('.talla-chips'), listing.tallas, 'chip');
@@ -738,6 +772,7 @@ function openMercModalForEdit(listing) {
   }
   document.getElementById('mercContacto').value = listing.contacto;
   document.getElementById('mercWhatsapp').value = listing.whatsapp;
+  document.getElementById('mercDocumento').value = listing.documento || '';
   document.getElementById('mercDescripcion').value = listing.descripcion || '';
   document.getElementById('mercUrgente').checked = listing.urgente;
 
@@ -805,6 +840,9 @@ function initMercForm() {
     const whatsappDigits = document.getElementById('mercWhatsapp').value.replace(/\D/g, '');
     if (whatsappDigits.length !== 9) { alert('Ingresa un número de WhatsApp válido de 9 dígitos.'); return; }
 
+    const doc = parseDocumento(document.getElementById('mercDocumento').value);
+    if (doc === null) { alert('El DNI debe tener 8 dígitos y el RUC 11. Déjalo vacío si prefieres no ponerlo.'); return; }
+
     const data = {
       tipo: document.querySelector('input[name="mercTipo"]:checked').value,
       items: resolveChipValues('mercItemChips', 'mercItemOtro'),
@@ -820,6 +858,8 @@ function initMercForm() {
       descripcion: document.getElementById('mercDescripcion').value.trim(),
       urgente: document.getElementById('mercUrgente').checked,
       foto: pendingMercFoto,
+      documento: doc.valor,
+      documentoTipo: doc.tipo,
     };
 
     const nextListings = mercListings.slice();
@@ -889,9 +929,9 @@ function initShare() {
   btn.addEventListener('click', () => {
     const url = window.location.href;
     if (navigator.share) {
-      navigator.share({ title: 'Costureros Lima', url }).catch(() => {});
+      navigator.share({ title: 'Confecciones Lima', url }).catch(() => {});
     } else {
-      window.open(`https://wa.me/?text=${encodeURIComponent('Directorio de costureros y talleres: ' + url)}`, '_blank');
+      window.open(`https://wa.me/?text=${encodeURIComponent('Directorio de empleos y mercadería de confección: ' + url)}`, '_blank');
     }
   });
 }
@@ -936,4 +976,20 @@ function init() {
   initShare();
 }
 
-document.addEventListener('DOMContentLoaded', init);
+function showFatalError(err) {
+  console.error(err);
+  const banner = document.createElement('div');
+  banner.style.cssText = 'position:fixed;inset:0;z-index:999;background:#2b2118;color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;padding:2rem;font-family:sans-serif;';
+  banner.innerHTML = '<div><p style="font-weight:700;margin-bottom:.5rem;">Hubo un problema cargando la página</p>' +
+    '<p style="opacity:.85;margin-bottom:1.2rem;">Prueba recargar (o cerrar y volver a abrir el link) — a veces el navegador se queda con una versión vieja guardada.</p>' +
+    '<button onclick="location.reload(true)" style="background:#c2542a;color:#fff;border:none;padding:.7rem 1.4rem;border-radius:.6rem;font-weight:700;cursor:pointer;">Recargar</button></div>';
+  document.body.appendChild(banner);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    init();
+  } catch (err) {
+    showFatalError(err);
+  }
+});

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Costureros Lima</title>
+<title>Confecciones Lima</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap">
 <style>
@@ -115,6 +115,7 @@
 
   .card h3{ font-size:1.05rem; font-weight:600; margin:0; line-height:1.25; }
   .zona-line{ display:flex; align-items:center; gap:.35rem; font-size:.85rem; color:var(--ink-soft); margin:0; }
+  .doc-line{ display:flex; align-items:center; gap:.3rem; font-size:.76rem; font-weight:700; color:var(--ofrezco-fg); margin:0; }
 
   .cat-chips{ display:flex; flex-wrap:wrap; gap:.35rem; }
   .cat-chips:empty{ display:none; }
@@ -188,8 +189,8 @@
     <div class="brand">
       <div class="brand-mark"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><path d="M8.2 7.8L20 20M8.2 16.2L20 4M8 12h1"/></svg></div>
       <div>
-        <h1>Costureros Lima</h1>
-        <p>Talleres y costureros, en un solo lugar</p>
+        <h1>Confecciones Lima</h1>
+        <p>Empleos y mercadería textil, en un solo lugar</p>
       </div>
     </div>
     <button id="shareBtn" type="button"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M8.3 10.7l7.4-4.4M8.3 13.3l7.4 4.4"/></svg> Compartir</button>
@@ -374,6 +375,12 @@
     </div>
 
     <div class="field">
+      <label for="formDocumento">DNI o RUC (opcional)</label>
+      <input id="formDocumento" type="text" inputmode="numeric" placeholder="DNI: 8 dígitos · RUC: 11 dígitos">
+      <p class="hint">Da más confianza. El RUC se muestra completo (es público); el DNI nunca se muestra, solo aparece como "registrado".</p>
+    </div>
+
+    <div class="field">
       <label for="formDescripcion">Información extra (opcional)</label>
       <textarea id="formDescripcion" rows="2" placeholder="Dónde has trabajado antes, referencias, dirección exacta, horario específico..."></textarea>
     </div>
@@ -483,6 +490,12 @@
     </div>
 
     <div class="field">
+      <label for="mercDocumento">DNI o RUC (opcional)</label>
+      <input id="mercDocumento" type="text" inputmode="numeric" placeholder="DNI: 8 dígitos · RUC: 11 dígitos">
+      <p class="hint">Da más confianza. El RUC se muestra completo (es público); el DNI nunca se muestra, solo aparece como "registrado".</p>
+    </div>
+
+    <div class="field">
       <label for="mercDescripcion">Información extra (opcional)</label>
       <textarea id="mercDescripcion" rows="2" placeholder="Marca, estado de la mercadería, cualquier otro detalle..."></textarea>
     </div>
@@ -508,6 +521,7 @@
     </div>
     <h3 class="contacto-name"></h3>
     <p class="zona-line"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg><span></span></p>
+    <p class="doc-line"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span></span></p>
     <div class="cat-chips perfil-chips"></div>
     <div class="meta-lines"></div>
     <div class="cat-chips skill-chips"></div>
@@ -531,6 +545,7 @@
     </div>
     <h3 class="contacto-name"></h3>
     <p class="zona-line"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg><span></span></p>
+    <p class="doc-line"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span></span></p>
     <div class="cat-chips item-chips"></div>
     <div class="cat-chips talla-chips"></div>
     <div class="cat-chips color-chips"></div>
