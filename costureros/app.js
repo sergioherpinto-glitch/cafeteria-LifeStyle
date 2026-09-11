@@ -48,7 +48,22 @@ const MERC_ITEMS = [
   'Telas (por rollo)', 'Insumos/Accesorios de costura', 'Otra'
 ];
 
+const TALLAS = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Talla única/estándar', 'Otra'];
+
+const COLORES = [
+  'Negro', 'Blanco', 'Gris', 'Azul', 'Celeste', 'Rojo', 'Verde',
+  'Amarillo', 'Rosado', 'Beige/Crema', 'Marrón', 'Multicolor/Varios colores', 'Otro'
+];
+
 const VENTA_TIPO = ['Por mayor', 'Por menor', 'Mayor y menor'];
+
+const MODALIDAD_VENTA = ['Contra entrega', 'Envío de muestra primero', 'Recojo en tienda/domicilio', 'Envío a nivel nacional', 'Otra'];
+
+const MERC_ZONAS = [
+  'Santa Anita', 'Ate', 'La Molina', 'San Luis', 'Vitarte',
+  'El Agustino', 'San Juan de Lurigancho', 'Chosica', 'Cercado de Lima', 'Gamarra',
+  'Provincia - Sierra', 'Provincia - Costa', 'Provincia - Selva', 'Todo el Perú (envío nacional)', 'Otro'
+];
 
 const SEED_DATA = [
   {
@@ -125,16 +140,25 @@ const SEED_DATA = [
 
 const MERC_SEED_DATA = [
   {
-    tipo: 'vendo', items: ['Chompas/Tejido'], cantidad: '200 unidades', ventaTipo: 'Mayor y menor',
+    tipo: 'vendo', items: ['Chompas/Tejido'], tallas: ['S', 'M', 'L', 'XL'], colores: ['Multicolor/Varios colores'],
+    cantidad: '200 unidades', ventaTipo: 'Mayor y menor', modalidadVenta: ['Recojo en tienda/domicilio', 'Envío a nivel nacional'],
     precio: 'S/25 por unidad al por mayor', zona: 'Gamarra', contacto: 'Manuel R.', whatsapp: '911000001',
-    descripcion: 'Chompas de tejido grueso, tallas S a XL, varios colores. Mando fotos y video por WhatsApp.',
+    descripcion: 'Chompas de tejido grueso, varios colores. Mando fotos y video por WhatsApp.',
     urgente: false, fecha: Date.now() - 1000 * 60 * 60 * 10,
   },
   {
-    tipo: 'compro', items: ['Ropa deportiva'], cantidad: '1000 unidades', ventaTipo: 'Por mayor',
+    tipo: 'compro', items: ['Ropa deportiva'], tallas: [], colores: [],
+    cantidad: '1000 unidades', ventaTipo: 'Por mayor', modalidadVenta: [],
     precio: '', zona: 'Cercado de Lima', contacto: 'Distribuidora Andina', whatsapp: '922000002',
     descripcion: 'Mayorista busca proveedor constante de ropa deportiva.', urgente: false,
     fecha: Date.now() - 1000 * 60 * 60 * 15,
+  },
+  {
+    tipo: 'vendo', items: ['Chompas/Tejido'], tallas: ['Talla única/estándar'], colores: ['Multicolor/Varios colores'],
+    cantidad: '500 unidades', ventaTipo: 'Por mayor', modalidadVenta: ['Contra entrega', 'Envío de muestra primero'],
+    precio: 'A tratar según cantidad', zona: 'Provincia - Sierra', contacto: 'Confecciones Rivera', whatsapp: '944556677',
+    descripcion: 'Chompas para temporada de frío, pensadas para reventa en provincia. Mando muestra primero.',
+    urgente: true, fecha: Date.now() - 1000 * 60 * 60 * 6,
   },
 ];
 
@@ -146,6 +170,7 @@ let activeMercTipo = '';
 let editingId = null;
 let mercEditingId = null;
 let currentView = 'empleos';
+let pendingMercFoto = '';
 
 function loadFrom(key, seed, prefix) {
   try {
@@ -162,7 +187,32 @@ function saveListings(data) {
 }
 
 function saveMercListings(data) {
-  try { localStorage.setItem(MERC_STORAGE_KEY, JSON.stringify(data)); } catch (e) { /* ignore */ }
+  try { localStorage.setItem(MERC_STORAGE_KEY, JSON.stringify(data)); return true; } catch (e) { return false; }
+}
+
+// Reduce el archivo a una sola imagen liviana (comprimida) para que quepa cómodamente
+// en localStorage — no se guarda el archivo original ni video: ver nota del formulario.
+function readAndCompressImage(file, maxDim, quality) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > height && width > maxDim) { height = Math.round(height * maxDim / width); width = maxDim; }
+        else if (height >= width && height > maxDim) { width = Math.round(width * maxDim / height); height = maxDim; }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = () => reject(new Error('No se pudo leer la imagen.'));
+      img.src = reader.result;
+    };
+    reader.onerror = () => reject(new Error('No se pudo leer el archivo.'));
+    reader.readAsDataURL(file);
+  });
 }
 
 function loadMineIds() {
@@ -573,7 +623,7 @@ function matchesMercFilters(listing) {
   if (q) {
     const haystack = [
       listing.contacto, listing.descripcion, listing.zona, listing.cantidad,
-      listing.ventaTipo, listing.precio, ...listing.items,
+      listing.ventaTipo, listing.precio, ...listing.items, ...listing.tallas, ...listing.colores, ...listing.modalidadVenta,
     ].join(' ').toLowerCase();
     if (!haystack.includes(q)) return false;
   }
@@ -603,6 +653,9 @@ function mercRender() {
 
     node.querySelector('.owner-actions').classList.toggle('hidden', !mineIds.includes(listing.id));
 
+    const photoEl = node.querySelector('.card-photo');
+    if (listing.foto) { photoEl.src = listing.foto; } else { photoEl.remove(); }
+
     const tipoBadge = node.querySelector('.tipo-badge');
     tipoBadge.textContent = listing.tipo === 'vendo' ? 'Vendo' : 'Busco comprar';
     tipoBadge.classList.add(listing.tipo === 'vendo' ? 'badge-ofrezco' : 'badge-busca');
@@ -612,6 +665,8 @@ function mercRender() {
     node.querySelector('.zona-line span').textContent = `${listing.zona} · ${timeAgo(listing.fecha)}`;
 
     appendChips(node.querySelector('.item-chips'), listing.items, 'chip');
+    appendChips(node.querySelector('.talla-chips'), listing.tallas, 'chip');
+    appendChips(node.querySelector('.color-chips'), listing.colores, 'chip');
 
     const metaLines = node.querySelector('.meta-lines');
     const cantidadVenta = [
@@ -620,6 +675,8 @@ function mercRender() {
     ].filter(Boolean).join(' · ');
     appendMetaLine(metaLines, metaTpl, cantidadVenta);
     appendMetaLine(metaLines, metaTpl, listing.precio ? `Precio: ${listing.precio}` : '');
+
+    appendChips(node.querySelector('.modalidad-venta-chips'), listing.modalidadVenta, 'chip chip-disponibilidad');
 
     const descEl = node.querySelector('.desc-text');
     if (listing.descripcion) { descEl.textContent = listing.descripcion; } else { descEl.remove(); }
@@ -633,12 +690,26 @@ function mercRender() {
 function openMercModal() { document.getElementById('mercModal').classList.add('open'); }
 function closeMercModal() { document.getElementById('mercModal').classList.remove('open'); }
 
+function showMercFotoPreview(dataUrl) {
+  document.getElementById('mercFotoPreviewImg').src = dataUrl;
+  document.getElementById('mercFotoPreview').classList.remove('hidden');
+  document.getElementById('mercFotoLabel').textContent = 'Cambiar foto';
+}
+
+function hideMercFotoPreview() {
+  document.getElementById('mercFotoPreview').classList.add('hidden');
+  document.getElementById('mercFotoPreviewImg').src = '';
+  document.getElementById('mercFotoLabel').textContent = 'Elegir foto';
+}
+
 function openMercModalForCreate() {
   mercEditingId = null;
   const form = document.getElementById('mercForm');
   form.reset();
   hideOtroFieldsIn('mercForm');
   updateZonaOtroVisibility('mercZona', 'mercZonaOtroField');
+  pendingMercFoto = '';
+  hideMercFotoPreview();
   document.getElementById('mercModalTitle').textContent = 'Publicar mercadería';
   document.getElementById('mercSubmitBtn').textContent = 'Publicar';
   openMercModal();
@@ -651,11 +722,14 @@ function openMercModalForEdit(listing) {
 
   document.querySelector(`input[name="mercTipo"][value="${listing.tipo}"]`).checked = true;
   populateChipGroup('mercItemChips', MERC_ITEMS, listing.items, 'mercItemOtro', 'mercItemOtroField');
+  populateChipGroup('mercTallaChips', TALLAS, listing.tallas, 'mercTallaOtro', 'mercTallaOtroField');
+  populateChipGroup('mercColorChips', COLORES, listing.colores, 'mercColorOtro', 'mercColorOtroField');
   document.getElementById('mercCantidad').value = listing.cantidad || '';
   document.getElementById('mercVentaTipo').value = listing.ventaTipo || '';
+  populateChipGroup('mercModalidadVentaChips', MODALIDAD_VENTA, listing.modalidadVenta, 'mercModalidadVentaOtro', 'mercModalidadVentaOtroField');
   document.getElementById('mercPrecio').value = listing.precio || '';
 
-  if (ZONAS.includes(listing.zona)) {
+  if (MERC_ZONAS.includes(listing.zona)) {
     document.getElementById('mercZona').value = listing.zona;
     document.getElementById('mercZonaOtro').value = '';
   } else {
@@ -666,6 +740,9 @@ function openMercModalForEdit(listing) {
   document.getElementById('mercWhatsapp').value = listing.whatsapp;
   document.getElementById('mercDescripcion').value = listing.descripcion || '';
   document.getElementById('mercUrgente').checked = listing.urgente;
+
+  pendingMercFoto = listing.foto || '';
+  if (pendingMercFoto) { showMercFotoPreview(pendingMercFoto); } else { hideMercFotoPreview(); }
 
   updateZonaOtroVisibility('mercZona', 'mercZonaOtroField');
   document.getElementById('mercModalTitle').textContent = 'Editar publicación';
@@ -690,6 +767,25 @@ function initMercForm() {
 
   wireZonaOtro('mercZona', 'mercZonaOtroField');
   wireOtroToggle('mercItemChips', 'mercItemOtroField');
+  wireOtroToggle('mercTallaChips', 'mercTallaOtroField');
+  wireOtroToggle('mercColorChips', 'mercColorOtroField');
+  wireOtroToggle('mercModalidadVentaChips', 'mercModalidadVentaOtroField');
+
+  document.getElementById('mercFoto').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      pendingMercFoto = await readAndCompressImage(file, 480, 0.55);
+      showMercFotoPreview(pendingMercFoto);
+    } catch (err) {
+      alert('No se pudo procesar esa imagen. Prueba con otra.');
+    }
+  });
+  document.getElementById('mercFotoRemove').addEventListener('click', () => {
+    pendingMercFoto = '';
+    document.getElementById('mercFoto').value = '';
+    hideMercFotoPreview();
+  });
 
   document.getElementById('mercGrid').addEventListener('click', (e) => {
     const card = e.target.closest('.card');
@@ -712,27 +808,39 @@ function initMercForm() {
     const data = {
       tipo: document.querySelector('input[name="mercTipo"]:checked').value,
       items: resolveChipValues('mercItemChips', 'mercItemOtro'),
+      tallas: resolveChipValues('mercTallaChips', 'mercTallaOtro'),
+      colores: resolveChipValues('mercColorChips', 'mercColorOtro'),
       cantidad: document.getElementById('mercCantidad').value.trim(),
       ventaTipo: document.getElementById('mercVentaTipo').value,
+      modalidadVenta: resolveChipValues('mercModalidadVentaChips', 'mercModalidadVentaOtro'),
       precio: document.getElementById('mercPrecio').value.trim(),
       zona: resolveZona('mercZona', 'mercZonaOtro'),
       contacto: document.getElementById('mercContacto').value.trim(),
       whatsapp: whatsappDigits,
       descripcion: document.getElementById('mercDescripcion').value.trim(),
       urgente: document.getElementById('mercUrgente').checked,
+      foto: pendingMercFoto,
     };
 
+    const nextListings = mercListings.slice();
+    let newId = null;
     if (mercEditingId) {
-      const idx = mercListings.findIndex(l => l.id === mercEditingId);
-      if (idx !== -1) mercListings[idx] = { ...mercListings[idx], ...data };
+      const idx = nextListings.findIndex(l => l.id === mercEditingId);
+      if (idx !== -1) nextListings[idx] = { ...nextListings[idx], ...data };
     } else {
-      const id = 'm-' + Date.now();
-      mercListings.unshift({ id, ...data, fecha: Date.now() });
-      mineIds.push(id);
-      saveMineIds();
+      newId = 'm-' + Date.now();
+      nextListings.unshift({ id: newId, ...data, fecha: Date.now() });
     }
 
-    saveMercListings(mercListings);
+    if (!saveMercListings(nextListings)) {
+      alert('No se pudo guardar. Es probable que la foto sea muy pesada para este navegador — prueba con una foto más liviana o quítala.');
+      return;
+    }
+    mercListings = nextListings;
+    if (newId) {
+      mineIds.push(newId);
+      saveMineIds();
+    }
     closeMercModal();
     mercRender();
   });
@@ -812,10 +920,13 @@ function init() {
   render();
 
   fillSelect(document.getElementById('mercFilterItem'), MERC_ITEMS);
-  fillSelect(document.getElementById('mercFilterZona'), ZONAS);
-  fillSelect(document.getElementById('mercZona'), ZONAS);
+  fillSelect(document.getElementById('mercFilterZona'), MERC_ZONAS);
+  fillSelect(document.getElementById('mercZona'), MERC_ZONAS);
   fillSelect(document.getElementById('mercVentaTipo'), VENTA_TIPO);
   buildChipGroup('mercItemChips', MERC_ITEMS);
+  buildChipGroup('mercTallaChips', TALLAS);
+  buildChipGroup('mercColorChips', COLORES);
+  buildChipGroup('mercModalidadVentaChips', MODALIDAD_VENTA);
   updateZonaOtroVisibility('mercZona', 'mercZonaOtroField');
   initMercForm();
   initMercFilters();
