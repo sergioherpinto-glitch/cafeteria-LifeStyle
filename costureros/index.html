@@ -9,60 +9,37 @@
 <style>
   .icon{ display:inline-block; vertical-align:-0.15em; }
   :root{
-    --bg:#f6f0e3;
+    --bg:#fbf9f5;
     --surface:#ffffff;
-    --surface-2:#ecdfc0;
+    --surface-2:#f3ecda;
     --ink:#181310;
     --ink-soft:#68594a;
-    --line:#e1d2ac;
+    --line:#e6dcc4;
     --thread:#a3371a;
     --thread-dark:#792712;
     --thread-soft:#f4d9c0;
     --accent:#5b6e23;
     --accent-dark:#44541a;
     --accent-soft:#e4ecc4;
-    --ofrezco-fg:#1e7d3c; --ofrezco-bg:#e3f3e6; --ofrezco-wash:#eef8ef;
-    --busca-fg:#2b4fc9;   --busca-bg:#e7edfc; --busca-wash:#eef1fd;
+    --ofrezco-fg:#1e7d3c; --ofrezco-bg:#e3f3e6; --ofrezco-wash:#f3faf3;
+    --busca-fg:#2b4fc9;   --busca-bg:#e7edfc; --busca-wash:#f3f6fe;
     --urgente-fg:#9c3f1c; --urgente-bg:#fbe0cf;
     --wa:#25D366; --wa-dark:#1ebe5b; --wa-ink:#ffffff;
     --grad-1:#c24a1f; --grad-2:#8a2c12;
-    --shadow: 0 10px 28px -8px rgba(24,19,16,.22);
-    --shadow-pop: 0 14px 30px -10px rgba(163,55,26,.35);
+    --shadow: 0 10px 28px -8px rgba(24,19,16,.16);
+    --shadow-pop: 0 14px 30px -10px rgba(163,55,26,.3);
   }
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --bg:#151310; --surface:#201c16; --surface-2:#2f281c;
-      --ink:#f5efe0; --ink-soft:#bcac93; --line:#3d3324;
-      --thread:#e2794f; --thread-dark:#c25a2e; --thread-soft:#3a2418;
-      --accent:#a8c25e; --accent-dark:#8aa63f; --accent-soft:#333d1a;
-      --ofrezco-fg:#8fe0a8; --ofrezco-bg:#173322; --ofrezco-wash:#1a2b1f;
-      --busca-fg:#a8bbf5; --busca-bg:#1c2440; --busca-wash:#1c2333;
-      --urgente-fg:#f2a578; --urgente-bg:#3a2418;
-      --grad-1:#a8391c; --grad-2:#5c1f0e;
-      --shadow: 0 10px 28px -8px rgba(0,0,0,.55);
-      --shadow-pop: 0 14px 30px -10px rgba(0,0,0,.6);
-    }
-  }
-  :root[data-theme="dark"]{
-    --bg:#151310; --surface:#201c16; --surface-2:#2f281c;
-    --ink:#f5efe0; --ink-soft:#bcac93; --line:#3d3324;
-    --thread:#e2794f; --thread-dark:#c25a2e; --thread-soft:#3a2418;
-    --accent:#a8c25e; --accent-dark:#8aa63f; --accent-soft:#333d1a;
-    --ofrezco-fg:#8fe0a8; --ofrezco-bg:#173322; --ofrezco-wash:#1a2b1f;
-    --busca-fg:#a8bbf5; --busca-bg:#1c2440; --busca-wash:#1c2333;
-    --urgente-fg:#f2a578; --urgente-bg:#3a2418;
-    --grad-1:#a8391c; --grad-2:#5c1f0e;
-    --shadow: 0 10px 28px -8px rgba(0,0,0,.55);
-    --shadow-pop: 0 14px 30px -10px rgba(0,0,0,.6);
-  }
+  /* Nota: sin modo oscuro automático a propósito — este directorio busca dar
+     confianza a primera vista, y un fondo oscuro por defecto (según el modo
+     del sistema del visitante) generaba el efecto contrario. */
 
   *{box-sizing:border-box;}
   body{
     margin:0; color:var(--ink);
     background-color:var(--bg);
     background-image:
-      radial-gradient(circle at 92% 0%, color-mix(in srgb, var(--accent) 16%, transparent) 0%, transparent 42%),
-      radial-gradient(circle at 4% 18%, color-mix(in srgb, var(--thread) 14%, transparent) 0%, transparent 38%);
+      radial-gradient(circle at 92% 0%, color-mix(in srgb, var(--accent) 5%, transparent) 0%, transparent 40%),
+      radial-gradient(circle at 4% 18%, color-mix(in srgb, var(--thread) 4%, transparent) 0%, transparent 36%);
     background-attachment:fixed;
     font-family:'Nunito', system-ui, sans-serif;
     -webkit-tap-highlight-color:transparent;
