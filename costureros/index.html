@@ -78,7 +78,7 @@
 
   .filters{ display:grid; grid-template-columns:1fr 1fr; gap:.55rem; margin-bottom:.4rem; }
   .filters .full{ grid-column:1 / -1; }
-  @media (min-width:560px){ .filters{ grid-template-columns:1.3fr 1fr 1fr auto; align-items:center; } .filters .full{ grid-column:auto; } }
+  @media (min-width:560px){ .filters{ grid-template-columns:1.6fr 1fr auto; align-items:center; } .filters .full{ grid-column:auto; } }
 
   input[type=text], input[type=tel], select, textarea{
     width:100%; font:inherit; font-size:.88rem; color:var(--ink);
@@ -220,8 +220,7 @@
     </div>
 
     <div class="filters">
-      <input id="searchInput" type="text" placeholder="Buscar (recta, jean, gamarra...)" class="full">
-      <select id="filterPerfil"><option value="">Todo perfil</option></select>
+      <input id="searchInput" type="text" placeholder="Buscar (recta, jean, gamarra, operario...)" class="full">
       <select id="filterZona"><option value="">Toda zona</option></select>
       <label class="check-pill"><input id="filterUrgente" type="checkbox"> Solo urgentes</label>
     </div>
@@ -248,7 +247,6 @@
 
     <div class="filters">
       <input id="mercSearchInput" type="text" placeholder="Buscar (polos, jean, mayorista...)" class="full">
-      <select id="mercFilterItem"><option value="">Todo tipo</option></select>
       <select id="mercFilterZona"><option value="">Toda zona</option></select>
       <label class="check-pill"><input id="mercFilterUrgente" type="checkbox"> Solo urgentes</label>
     </div>

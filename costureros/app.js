@@ -455,12 +455,10 @@ function waLink(listing) {
 
 function matchesFilters(listing) {
   const q = document.getElementById('searchInput').value.trim().toLowerCase();
-  const perfil = document.getElementById('filterPerfil').value;
   const zona = document.getElementById('filterZona').value;
   const soloUrgente = document.getElementById('filterUrgente').checked;
 
   if (activeTipo && listing.tipo !== activeTipo) return false;
-  if (perfil && !listing.perfiles.includes(perfil)) return false;
   if (zona && listing.zona !== zona && !(listing.zonasTrabajo || []).includes(zona)) return false;
   if (soloUrgente && !listing.urgente) return false;
   if (q) {
@@ -743,7 +741,6 @@ function initEmpleosForm() {
 
 function initEmpleosFilters() {
   document.getElementById('searchInput').addEventListener('input', render);
-  document.getElementById('filterPerfil').addEventListener('change', render);
   document.getElementById('filterZona').addEventListener('change', render);
   document.getElementById('filterUrgente').addEventListener('change', render);
 
@@ -774,12 +771,10 @@ function mercWaLink(listing) {
 
 function matchesMercFilters(listing) {
   const q = document.getElementById('mercSearchInput').value.trim().toLowerCase();
-  const item = document.getElementById('mercFilterItem').value;
   const zona = document.getElementById('mercFilterZona').value;
   const soloUrgente = document.getElementById('mercFilterUrgente').checked;
 
   if (activeMercTipo && listing.tipo !== activeMercTipo) return false;
-  if (item && !listing.items.includes(item)) return false;
   if (zona && listing.zona !== zona) return false;
   if (soloUrgente && !listing.urgente) return false;
   if (q) {
@@ -1018,7 +1013,6 @@ function initMercForm() {
 
 function initMercFilters() {
   document.getElementById('mercSearchInput').addEventListener('input', mercRender);
-  document.getElementById('mercFilterItem').addEventListener('change', mercRender);
   document.getElementById('mercFilterZona').addEventListener('change', mercRender);
   document.getElementById('mercFilterUrgente').addEventListener('change', mercRender);
 
@@ -1067,7 +1061,6 @@ function initShare() {
 }
 
 function init() {
-  fillSelect(document.getElementById('filterPerfil'), PERFILES);
   fillSelect(document.getElementById('filterZona'), ZONAS);
   fillSelect(document.getElementById('formZona'), ZONAS);
   fillSelect(document.getElementById('formExperiencia'), EXPERIENCIA);
@@ -1090,7 +1083,6 @@ function init() {
   initEmpleosFilters();
   render();
 
-  fillSelect(document.getElementById('mercFilterItem'), MERC_ITEMS);
   fillSelect(document.getElementById('mercFilterZona'), MERC_ZONAS);
   fillSelect(document.getElementById('mercZona'), MERC_ZONAS);
   fillSelect(document.getElementById('mercVentaTipo'), VENTA_TIPO);
