@@ -5,14 +5,13 @@ const STORAGE_KEY = 'costureros_listings_v2';
 const MERC_STORAGE_KEY = 'costureros_mercaderia_v1';
 const MINE_KEY = 'costureros_mine_v2';
 
-// TODO: reemplazar por el correo real — a este correo llegan los reportes y las
-// confirmaciones de pago. No usamos WhatsApp aquí a propósito: así el número
-// personal de Sergio no queda expuesto en el código de la página.
-const ADMIN_EMAIL = 'admin@confeccioneslima.pe';
+// A este correo llegan los reportes y las confirmaciones de pago. No usamos
+// WhatsApp aquí a propósito: así el número personal de Sergio no queda
+// expuesto en el código de la página.
+const ADMIN_EMAIL = 'sergioestratega.oficial@gmail.com';
 // El número de Yape sí tiene que ser visible para que la gente pueda pagar —
-// eso lo exige Yape, no es una decisión de la app. Es una marca (Jasper
-// Legacy), no el WhatsApp personal de Sergio.
-const YAPE_NUMBER = '962667762';
+// eso lo exige Yape, no es una decisión de la app.
+const YAPE_NUMBER = '926924581';
 
 const PERFILES = ['Operario(a) de máquina', 'Manual de costura', 'Cortador(a)', 'Vendedor(a)'];
 
