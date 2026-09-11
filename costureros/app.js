@@ -1053,7 +1053,7 @@ function initShare() {
   btn.addEventListener('click', () => {
     const url = window.location.href;
     if (navigator.share) {
-      navigator.share({ title: 'Confecciones Lima', url }).catch(() => {});
+      navigator.share({ title: 'Confecciones Perú', url }).catch(() => {});
     } else {
       window.open(`https://wa.me/?text=${encodeURIComponent('Directorio de empleos y mercadería de confección: ' + url)}`, '_blank');
     }

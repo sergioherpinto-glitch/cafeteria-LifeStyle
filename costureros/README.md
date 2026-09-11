@@ -1,4 +1,4 @@
-# Confecciones Lima — Directorio
+# Confecciones Perú — Directorio
 
 MVP de un directorio web para centralizar lo que hoy está disperso en carteles
 físicos por Ate/Santa Anita/La Molina/Gamarra: talleres que necesitan
