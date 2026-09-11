@@ -1049,6 +1049,7 @@ function initNav() {
 
 function initShare() {
   const btn = document.getElementById('shareBtn');
+  btn.classList.remove('hidden');
   btn.style.display = 'inline-flex';
   btn.addEventListener('click', () => {
     const url = window.location.href;

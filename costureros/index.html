@@ -6,593 +6,497 @@
 <title>Confecciones Perú</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,600&family=Nunito:wght@400;500;600;700;800&display=swap">
-<style>
-  .icon{ display:inline-block; vertical-align:-0.15em; }
-  :root{
-    --bg:#fbf9f5;
-    --surface:#ffffff;
-    --surface-2:#f3ecda;
-    --ink:#181310;
-    --ink-soft:#68594a;
-    --line:#e6dcc4;
-    --thread:#a3371a;
-    --thread-dark:#792712;
-    --thread-soft:#f4d9c0;
-    --accent:#5b6e23;
-    --accent-dark:#44541a;
-    --accent-soft:#e4ecc4;
-    --ofrezco-fg:#1e7d3c; --ofrezco-bg:#e3f3e6; --ofrezco-wash:#f3faf3;
-    --busca-fg:#2b4fc9;   --busca-bg:#e7edfc; --busca-wash:#f3f6fe;
-    --urgente-fg:#9c3f1c; --urgente-bg:#fbe0cf;
-    --wa:#25D366; --wa-dark:#1ebe5b; --wa-ink:#ffffff;
-    --grad-1:#c24a1f; --grad-2:#8a2c12;
-    --shadow: 0 10px 28px -8px rgba(24,19,16,.16);
-    --shadow-pop: 0 14px 30px -10px rgba(163,55,26,.3);
-  }
-  /* Nota: sin modo oscuro automático a propósito — este directorio busca dar
-     confianza a primera vista, y un fondo oscuro por defecto (según el modo
-     del sistema del visitante) generaba el efecto contrario. */
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          thread: { DEFAULT: '#a3371a', dark: '#792712', soft: '#f4d9c0' },
+          accent: { DEFAULT: '#5b6e23', dark: '#44541a', soft: '#e4ecc4' },
+          ofrezco: { DEFAULT: '#1e7d3c', bg: '#e3f3e6', wash: '#f3faf3' },
+          busca: { DEFAULT: '#2b4fc9', bg: '#e7edfc', wash: '#f3f6fe' },
+          urgente: { DEFAULT: '#9c3f1c', bg: '#fbe0cf' },
+          ink: { DEFAULT: '#181310', soft: '#68594a' },
+        },
+        fontFamily: {
+          sans: ['Nunito', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          display: ['Fraunces', 'Georgia', 'serif'],
+        },
+      },
+    },
+  };
+</script>
+<style type="text/tailwindcss">
+  .icon{ @apply inline-block align-[-0.15em]; }
+  .scrollbar-none{ scrollbar-width:none; }
+  .scrollbar-none::-webkit-scrollbar{ display:none; }
 
-  *{box-sizing:border-box;}
-  body{
-    margin:0; color:var(--ink);
-    background-color:var(--bg);
-    background-image:
-      radial-gradient(circle at 92% 0%, color-mix(in srgb, var(--accent) 5%, transparent) 0%, transparent 40%),
-      radial-gradient(circle at 4% 18%, color-mix(in srgb, var(--thread) 4%, transparent) 0%, transparent 36%);
-    background-attachment:fixed;
-    font-family:'Nunito', system-ui, sans-serif;
-    -webkit-tap-highlight-color:transparent;
-  }
-  h1,h2,h3,.brand-font{ font-family:'Fraunces', Georgia, serif; }
-  h1{ text-wrap:balance; font-weight:800; letter-spacing:-.01em; }
-  a{ color:inherit; }
-  button{ font-family:inherit; }
+  .card{ @apply bg-white border border-stone-200 border-l-[5px] rounded-[1.5rem] p-[1.15rem] flex flex-col gap-2 transition-all duration-150; border-left-color:#e7e0d2; }
+  .card:hover{ @apply -translate-y-1 shadow-xl; }
+  .card:has(.badge-ofrezco){ @apply bg-gradient-to-b from-ofrezco-wash to-white; border-left-color:#1e7d3c; }
+  .card:has(.badge-busca){ @apply bg-gradient-to-b from-busca-wash to-white; border-left-color:#2b4fc9; }
+  .card:has(.urgente-badge:not(.hidden)){ @apply ring-2 ring-urgente ring-inset; }
+  @media (prefers-reduced-motion:reduce){ .card{ @apply transition-none; } .card:hover{ @apply translate-y-0; } }
 
-  .wrap{ max-width:760px; margin:0 auto; padding-inline:1.1rem; }
+  .card-photos img{ @apply w-20 h-20 object-cover rounded-2xl shrink-0 bg-stone-100; }
 
-  header{ position:sticky; top:0; z-index:20; background:linear-gradient(120deg, var(--grad-1), var(--grad-2)); border-bottom-left-radius:1.4rem; border-bottom-right-radius:1.4rem; box-shadow:var(--shadow); }
-  .header-row{ display:flex; align-items:center; justify-content:space-between; gap:.75rem; padding-block:.9rem; }
-  .brand{ display:flex; align-items:center; gap:.7rem; }
-  .brand-mark{ width:2.6rem; height:2.6rem; border-radius:.9rem; background:#fff; color:var(--thread-dark); display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex:none; box-shadow:0 4px 10px -3px rgba(0,0,0,.35); }
-  .brand h1{ font-size:1.25rem; font-weight:800; margin:0; line-height:1.15; color:#fff; }
-  .brand p{ margin:0; font-size:.76rem; color:rgba(255,255,255,.82); }
-  #shareBtn{ display:none; align-items:center; gap:.5rem; font-size:.82rem; font-weight:700; padding:.5rem .85rem; border-radius:999px; border:1px solid rgba(255,255,255,.5); background:rgba(255,255,255,.12); color:#fff; cursor:pointer; }
-  #shareBtn:hover{ background:rgba(255,255,255,.22); }
+  .badge-ofrezco{ @apply bg-ofrezco-bg text-ofrezco; }
+  .badge-busca{ @apply bg-busca-bg text-busca; }
+  .badge-urgente{ @apply bg-urgente-bg text-urgente; }
 
-  .mode-tabs{ display:flex; gap:.6rem; padding-top:1.1rem; }
-  .mode-tab{ flex:1; padding:.7rem; border-radius:1rem; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-weight:800; font-size:.85rem; text-transform:uppercase; letter-spacing:.04em; cursor:pointer; box-shadow:0 2px 6px -3px rgba(24,19,16,.15); transition:transform .15s ease, box-shadow .15s ease; }
-  .mode-tab:hover{ transform:translateY(-1px); }
-  .mode-tab[aria-pressed="true"]{ background:linear-gradient(120deg, var(--thread), var(--thread-dark)); border-color:transparent; color:#fff; box-shadow:var(--shadow-pop); }
+  .chip{ @apply text-[11px] font-semibold bg-stone-100 text-thread-dark px-2.5 py-1 rounded-full; }
+  .chip-perfil{ @apply bg-thread-soft text-thread-dark uppercase tracking-wide text-[10px]; }
+  .chip-disponibilidad{ @apply bg-busca-bg text-busca; }
 
-  .tabs{ display:flex; gap:.5rem; overflow-x:auto; padding-block:1.1rem .6rem; scrollbar-width:none; }
-  .tabs::-webkit-scrollbar{ display:none; }
-  .tipo-tab{ white-space:nowrap; padding:.5rem 1.1rem; border-radius:999px; font-size:.83rem; font-weight:700; border:1px solid transparent; background:var(--surface-2); color:var(--ink); cursor:pointer; transition:background .15s,color .15s,transform .15s; }
-  .tipo-tab:hover{ transform:translateY(-1px); }
-  .tipo-tab[aria-pressed="true"]{ background:linear-gradient(120deg, var(--accent), var(--accent-dark)); border-color:transparent; color:#fff; box-shadow:0 8px 18px -8px color-mix(in srgb, var(--accent) 60%, transparent); }
+  .wa-link{ @apply bg-gradient-to-r from-[#25D366] to-[#1ebe5b] shadow-[0_8px_18px_-8px_rgba(37,211,102,.55)]; }
+  .wa-link:hover{ @apply -translate-y-0.5; }
 
-  .filters{ display:grid; grid-template-columns:1fr 1fr; gap:.55rem; margin-bottom:.4rem; }
-  .filters .full{ grid-column:1 / -1; }
-  @media (min-width:560px){ .filters{ grid-template-columns:1.6fr 1fr auto; align-items:center; } .filters .full{ grid-column:auto; } }
+  .foto-thumb{ @apply relative w-16 h-16; }
+  .foto-thumb img{ @apply w-full h-full object-cover rounded-xl border border-stone-200 block; }
+  .foto-thumb-remove{ @apply absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-ink text-white border-0 text-xs leading-none flex items-center justify-center p-0 cursor-pointer; }
 
-  input[type=text], input[type=tel], select, textarea{
-    width:100%; font:inherit; font-size:.88rem; color:var(--ink);
-    background:var(--surface); border:1.5px solid var(--line); border-radius:.9rem; padding:.6rem .8rem;
-  }
-  input::placeholder, textarea::placeholder{ color:var(--ink-soft); }
-  select:focus-visible, input:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible{
-    outline:2px solid var(--thread); outline-offset:2px;
-  }
-  .check-pill{ display:flex; align-items:center; gap:.5rem; font-size:.85rem; font-weight:600; background:var(--surface); border:1.5px solid var(--line); border-radius:999px; padding:.55rem .85rem; }
-  .check-pill input{ accent-color:var(--thread); width:1rem; height:1rem; }
+  .cat-toggle{ @apply relative cursor-pointer; }
+  .cat-toggle input{ @apply absolute opacity-0 w-px h-px; }
+  .cat-toggle span{ @apply inline-block px-3 py-1.5 rounded-full border border-stone-200 text-[13px] font-medium bg-white transition-colors; }
+  .cat-toggle input:checked + span{ @apply bg-thread border-thread text-white; }
+  .cat-toggle input:focus-visible + span{ @apply outline outline-2 outline-thread outline-offset-2; }
 
-  #resultCount{ font-size:.78rem; color:var(--ink-soft); margin:0 0 .9rem; }
+  .tipo-choice input{ @apply absolute opacity-0 w-px h-px; }
+  .tipo-choice span{ @apply block text-center px-2 py-2.5 rounded-2xl border border-stone-200 text-[13px] font-bold cursor-pointer transition-all; }
+  .tipo-choice input:checked + span{ @apply bg-gradient-to-r from-thread to-thread-dark text-white border-transparent shadow-[0_10px_24px_-8px_rgba(163,55,26,.45)] -translate-y-0.5; }
+  .tipo-choice input:focus-visible + span{ @apply outline outline-2 outline-thread outline-offset-2; }
 
-  main{ padding-bottom:6rem; }
-  #grid{ display:grid; gap:.8rem; }
-  @media (min-width:640px){ #grid{ grid-template-columns:1fr 1fr; } }
-  @media (min-width:900px){ #grid{ grid-template-columns:1fr 1fr 1fr; } }
+  .tipo-tab[aria-pressed="true"]{ @apply bg-gradient-to-r from-accent to-accent-dark text-white border-transparent shadow-[0_8px_18px_-8px_rgba(91,110,35,.5)]; }
+  .mode-tab[aria-pressed="true"]{ @apply bg-gradient-to-r from-thread to-thread-dark text-white border-transparent shadow-[0_10px_24px_-8px_rgba(163,55,26,.45)]; }
 
-  .card{ background:var(--surface); border:1px solid var(--line); border-radius:1.5rem; padding:1.15rem; display:flex; flex-direction:column; gap:.5rem; transition:transform .15s ease, box-shadow .15s ease; overflow:hidden; border-left:5px solid var(--line); }
-  .card:has(.badge-ofrezco){ background:linear-gradient(180deg, var(--ofrezco-wash), var(--surface) 40%); border-left-color:var(--ofrezco-fg); }
-  .card:has(.badge-busca){ background:linear-gradient(180deg, var(--busca-wash), var(--surface) 40%); border-left-color:var(--busca-fg); }
-  .card:has(.urgente-badge:not(.hidden)){ box-shadow:0 0 0 2px var(--urgente-fg) inset; }
-  .card-photos{ display:flex; gap:.4rem; overflow-x:auto; }
-  .card-photos:empty{ display:none; }
-  .card-photos img{ width:5.5rem; height:5.5rem; object-fit:cover; border-radius:1rem; flex:none; background:var(--surface-2); }
-  .card:hover{ transform:translateY(-3px); box-shadow:var(--shadow); }
-  @media (prefers-reduced-motion:reduce){ .card{ transition:none; } .card:hover{ transform:none; } }
+  .submit-btn{ @apply bg-gradient-to-r from-thread to-thread-dark shadow-[0_10px_24px_-8px_rgba(163,55,26,.4)]; }
+  .submit-btn:hover{ @apply -translate-y-0.5; }
+  #fab{ @apply bg-gradient-to-br from-accent to-accent-dark shadow-[0_10px_24px_-6px_rgba(91,110,35,.55)]; }
+  #fab:hover{ @apply scale-105 rotate-90; }
 
-  .badge-row{ display:flex; align-items:center; justify-content:space-between; gap:.4rem; }
-  .owner-actions{ display:flex; gap:.3rem; justify-content:flex-end; }
-  .ghost-btn{ display:flex; align-items:center; gap:.3rem; font-size:.72rem; font-weight:600; background:none; border:none; color:var(--ink-soft); cursor:pointer; padding:.2rem .35rem; border-radius:.4rem; }
-  .ghost-btn:hover{ background:var(--surface-2); color:var(--thread-dark); }
-  .delete-btn:hover{ color:#c0392b; }
-  .badge{ font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em; padding:.2rem .55rem; border-radius:999px; }
-  .badge-ofrezco{ background:var(--ofrezco-bg); color:var(--ofrezco-fg); }
-  .badge-busca{ background:var(--busca-bg); color:var(--busca-fg); }
-  .badge-urgente{ background:var(--urgente-bg); color:var(--urgente-fg); }
+  #modal, #mercModal{ @apply hidden fixed inset-0 z-40 bg-black/55 backdrop-blur-[2px] items-end justify-center sm:items-center; }
+  #modal.open, #mercModal.open{ @apply flex; }
 
-  .card h3{ font-size:1.05rem; font-weight:600; margin:0; line-height:1.25; }
-  .zona-line{ display:flex; align-items:center; gap:.35rem; font-size:.85rem; color:var(--ink-soft); margin:0; }
-  .doc-line{ display:flex; align-items:center; gap:.3rem; font-size:.76rem; font-weight:700; color:var(--ofrezco-fg); margin:0; }
-
-  .cat-chips{ display:flex; flex-wrap:wrap; gap:.35rem; }
-  .cat-chips:empty{ display:none; }
-  .chip{ font-size:.7rem; font-weight:600; background:var(--surface-2); color:var(--thread-dark); padding:.18rem .55rem; border-radius:999px; }
-  .chip-perfil{ background:var(--thread-soft); color:var(--thread-dark); text-transform:uppercase; letter-spacing:.02em; font-size:.66rem; }
-  .chip-disponibilidad{ background:var(--busca-bg); color:var(--busca-fg); }
-
-  .meta-lines{ display:flex; flex-direction:column; gap:.15rem; }
-  .meta-line{ font-size:.83rem; color:var(--ink-soft); margin:0; }
-
-  .pago-text{ font-size:.88rem; font-weight:700; margin:0; color:var(--ink); }
-  .desc-text{ font-size:.85rem; color:var(--ink-soft); margin:0; line-height:1.45; }
-
-  .wa-link{ margin-top:.3rem; display:flex; align-items:center; justify-content:center; gap:.5rem; background:linear-gradient(120deg, var(--wa), var(--wa-dark)); color:var(--wa-ink); text-decoration:none; font-weight:800; font-size:.88rem; padding:.7rem; border-radius:999px; box-shadow:0 8px 18px -8px rgba(37,211,102,.55); transition:transform .15s ease; }
-  .wa-link:hover{ transform:translateY(-1px); }
-  .report-link{ display:block; margin:.15rem auto 0; background:none; border:none; color:var(--ink-soft); font-size:.68rem; text-decoration:underline; cursor:pointer; padding:.2rem; }
-  .report-link:hover{ color:var(--thread-dark); }
-
-  .hidden{ display:none !important; }
-  #emptyState, #mercEmptyState{ display:none; text-align:center; padding:4rem 1rem; color:var(--ink-soft); }
-  #emptyState.visible, #mercEmptyState.visible{ display:block; }
-  #emptyState strong, #mercEmptyState strong{ display:block; color:var(--ink); font-weight:700; margin-bottom:.25rem; }
-  .empty-illustration{ width:5.5rem; height:5.5rem; border-radius:50%; margin:0 auto 1.1rem; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, var(--thread-soft), var(--accent-soft)); color:var(--thread-dark); }
-
-  #fab{ position:fixed; right:1.1rem; bottom:1.1rem; z-index:30; width:3.6rem; height:3.6rem; border-radius:50%; background:linear-gradient(135deg, var(--accent), var(--accent-dark)); color:#fff; border:3px solid var(--surface); font-size:1.3rem; box-shadow:0 10px 24px -6px color-mix(in srgb, var(--accent) 65%, transparent); cursor:pointer; transition:transform .15s ease; }
-  #fab:hover{ transform:scale(1.06) rotate(90deg); }
-
-  #modal, #mercModal{ display:none; position:fixed; inset:0; z-index:40; background:rgba(20,15,10,.55); backdrop-filter:blur(2px); align-items:flex-end; justify-content:center; }
-  #modal.open, #mercModal.open{ display:flex; }
-  @media (min-width:560px){ #modal, #mercModal{ align-items:center; } }
-
-  #publishForm, #mercForm{ background:var(--surface); color:var(--ink); width:100%; max-width:32rem; max-height:92vh; overflow-y:auto; padding:1.4rem; border-radius:1.6rem 1.6rem 0 0; }
-  @media (min-width:560px){ #publishForm, #mercForm{ border-radius:1.6rem; } }
-  .modal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:1.1rem; }
-  .modal-head h2{ font-size:1.15rem; font-weight:600; margin:0; }
-  #closeModal{ width:2rem; height:2rem; border-radius:50%; border:none; background:transparent; color:var(--ink-soft); font-size:1rem; cursor:pointer; }
-  #closeModal:hover{ background:var(--surface-2); color:var(--ink); }
-
-  .section-title{ font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--thread-dark); margin:1.4rem 0 .8rem; padding-top:.9rem; border-top:1px solid var(--line); }
-  .section-title:first-of-type{ margin-top:0; padding-top:0; border-top:none; }
-  .field{ margin-bottom:1rem; }
-  .otro-field{ margin-top:.5rem; }
-  .hidden-file-input{ position:absolute; opacity:0; width:1px; height:1px; overflow:hidden; }
-  .foto-picker-btn{ display:inline-flex; align-items:center; gap:.4rem; padding:.6rem 1rem; border:1.5px dashed var(--thread); border-radius:999px; background:var(--thread-soft); color:var(--thread-dark); font-size:.85rem; font-weight:700; cursor:pointer; }
-  .foto-picker-btn:hover{ background:var(--thread); color:#fff; border-style:solid; }
-  .foto-preview-list{ margin-top:.6rem; display:flex; flex-wrap:wrap; gap:.6rem; }
-  .foto-preview-list:empty{ margin-top:0; }
-  .foto-thumb{ position:relative; width:4.2rem; height:4.2rem; }
-  .foto-thumb img{ width:100%; height:100%; object-fit:cover; border-radius:.6rem; border:1px solid var(--line); display:block; }
-  .foto-thumb-remove{ position:absolute; top:-.4rem; right:-.4rem; width:1.3rem; height:1.3rem; border-radius:50%; background:var(--ink); color:var(--bg); border:none; font-size:.8rem; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; }
-  .field label{ display:block; font-size:.85rem; font-weight:600; margin-bottom:.4rem; }
-  .field .hint{ font-size:.72rem; color:var(--ink-soft); margin:.35rem 0 0; }
-  .field-grid{ display:grid; grid-template-columns:1fr 1fr; gap:.7rem; }
-
-  .tipo-choice{ display:grid; grid-template-columns:1fr 1fr; gap:.5rem; }
-  .tipo-choice input{ position:absolute; opacity:0; width:1px; height:1px; }
-  .tipo-choice span{ display:block; text-align:center; padding:.65rem .4rem; border-radius:1rem; border:1.5px solid var(--line); font-size:.82rem; font-weight:700; cursor:pointer; transition:transform .15s ease; }
-  .tipo-choice input:checked + span{ background:linear-gradient(120deg, var(--thread), var(--thread-dark)); border-color:transparent; color:#fff; transform:translateY(-1px); box-shadow:var(--shadow-pop); }
-  .tipo-choice input:focus-visible + span{ outline:2px solid var(--thread); outline-offset:2px; }
-
-  .cat-toggle{ position:relative; cursor:pointer; }
-  .cat-toggle input{ position:absolute; opacity:0; width:1px; height:1px; }
-  .cat-toggle span{ display:inline-block; padding:.32rem .7rem; border-radius:999px; border:1px solid var(--line); font-size:.78rem; font-weight:500; background:var(--surface); }
-  .cat-toggle input:checked + span{ background:var(--thread); border-color:var(--thread); color:#fff; }
-  .cat-toggle input:focus-visible + span{ outline:2px solid var(--thread); outline-offset:2px; }
-  #categoriaChips{ display:flex; flex-wrap:wrap; gap:.4rem; }
-
-  .submit-btn{ width:100%; padding:.9rem; border:none; border-radius:999px; background:linear-gradient(120deg, var(--thread), var(--thread-dark)); color:#fff; font-weight:800; font-size:.95rem; cursor:pointer; box-shadow:var(--shadow-pop); transition:transform .15s ease; }
-  .submit-btn:hover{ transform:translateY(-1px); }
-  .form-note{ font-size:.7rem; text-align:center; color:var(--ink-soft); margin:.8rem 0 0; }
+  #emptyState, #mercEmptyState{ @apply hidden; }
+  #emptyState.visible, #mercEmptyState.visible{ @apply block; }
 </style>
 </head>
-<body>
+<body class="font-sans text-ink bg-[#fbf9f5] antialiased">
 
-<header>
-  <div class="wrap header-row">
-    <div class="brand">
-      <div class="brand-mark"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><path d="M8.2 7.8L20 20M8.2 16.2L20 4M8 12h1"/></svg></div>
+<header class="sticky top-0 z-20 bg-gradient-to-r from-[#c24a1f] to-[#8a2c12] rounded-b-3xl shadow-lg">
+  <div class="max-w-3xl mx-auto px-4 flex items-center justify-between gap-3 py-4">
+    <div class="flex items-center gap-3">
+      <div class="w-11 h-11 rounded-2xl bg-white text-thread-dark flex items-center justify-center shrink-0 shadow-md">
+        <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><path d="M8.2 7.8L20 20M8.2 16.2L20 4M8 12h1"/></svg>
+      </div>
       <div>
-        <h1>Confecciones Perú</h1>
-        <p>Empleos y mercadería textil, en un solo lugar</p>
+        <h1 class="font-display text-xl font-extrabold text-white leading-tight tracking-tight m-0">Confecciones Perú</h1>
+        <p class="m-0 text-sm text-white/80">Empleos y mercadería textil, en un solo lugar</p>
       </div>
     </div>
-    <button id="shareBtn" type="button"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M8.3 10.7l7.4-4.4M8.3 13.3l7.4 4.4"/></svg> Compartir</button>
+    <button id="shareBtn" type="button" class="hidden items-center gap-2 text-sm font-bold px-3.5 py-2 rounded-full border border-white/50 bg-white/10 text-white hover:bg-white/20 transition-colors">
+      <svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M8.3 10.7l7.4-4.4M8.3 13.3l7.4 4.4"/></svg> Compartir
+    </button>
   </div>
 </header>
 
-<div class="wrap">
-  <div class="mode-tabs" role="tablist" aria-label="Sección">
-    <button class="mode-tab" data-view="empleos" aria-pressed="true">Empleos</button>
-    <button class="mode-tab" data-view="mercaderia" aria-pressed="false">Mercadería</button>
+<div class="max-w-3xl mx-auto px-4">
+  <div class="flex gap-2.5 pt-4" role="tablist" aria-label="Sección">
+    <button class="mode-tab flex-1 py-2.5 rounded-2xl border border-stone-200 bg-white text-ink font-extrabold text-[13px] uppercase tracking-wide cursor-pointer shadow-sm hover:-translate-y-0.5 transition-all" data-view="empleos" aria-pressed="true">Empleos</button>
+    <button class="mode-tab flex-1 py-2.5 rounded-2xl border border-stone-200 bg-white text-ink font-extrabold text-[13px] uppercase tracking-wide cursor-pointer shadow-sm hover:-translate-y-0.5 transition-all" data-view="mercaderia" aria-pressed="false">Mercadería</button>
   </div>
 </div>
 
 <div id="empleosView">
-  <div class="wrap">
-    <div class="tabs" role="tablist" aria-label="Tipo de aviso">
-      <button class="tipo-tab" data-tipo="" aria-pressed="true">Todos</button>
-      <button class="tipo-tab" data-tipo="ofrezco" aria-pressed="false">Talleres con vacante</button>
-      <button class="tipo-tab" data-tipo="busco" aria-pressed="false">Costureros buscando trabajo</button>
+  <div class="max-w-3xl mx-auto px-4">
+    <div class="flex gap-2 overflow-x-auto scrollbar-none py-4" role="tablist" aria-label="Tipo de aviso">
+      <button class="tipo-tab whitespace-nowrap px-4 py-2 rounded-full text-[13px] font-bold border border-transparent bg-stone-100 text-ink cursor-pointer hover:-translate-y-0.5 transition-all" data-tipo="" aria-pressed="true">Todos</button>
+      <button class="tipo-tab whitespace-nowrap px-4 py-2 rounded-full text-[13px] font-bold border border-transparent bg-stone-100 text-ink cursor-pointer hover:-translate-y-0.5 transition-all" data-tipo="ofrezco" aria-pressed="false">Talleres con vacante</button>
+      <button class="tipo-tab whitespace-nowrap px-4 py-2 rounded-full text-[13px] font-bold border border-transparent bg-stone-100 text-ink cursor-pointer hover:-translate-y-0.5 transition-all" data-tipo="busco" aria-pressed="false">Costureros buscando trabajo</button>
     </div>
 
-    <div class="filters">
-      <input id="searchInput" type="text" placeholder="Buscar (recta, jean, gamarra, operario...)" class="full">
-      <select id="filterZona"><option value="">Toda zona</option></select>
-      <label class="check-pill"><input id="filterUrgente" type="checkbox"> Solo urgentes</label>
+    <div class="grid grid-cols-2 gap-2.5 mb-1 sm:[grid-template-columns:1.6fr_1fr_auto] sm:items-center">
+      <input id="searchInput" type="text" placeholder="Buscar (recta, jean, gamarra, operario...)" class="col-span-2 sm:col-auto w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-thread focus-visible:outline-offset-2">
+      <select id="filterZona" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-thread focus-visible:outline-offset-2"><option value="">Toda zona</option></select>
+      <label class="flex items-center gap-2 text-[14px] font-semibold bg-white border border-stone-200 rounded-full px-3.5 py-2.5 cursor-pointer"><input id="filterUrgente" type="checkbox" class="accent-thread w-4 h-4"> Solo urgentes</label>
     </div>
-    <p id="resultCount"></p>
+    <p id="resultCount" class="text-[12px] text-ink-soft mb-3"></p>
   </div>
 
-  <main class="wrap">
-    <div id="grid"></div>
-    <div id="emptyState">
-      <div class="empty-illustration"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a1.5 1.5 0 1 1 1.5 1.5"/><path d="M12 4.5v2"/><path d="M12 6.5L4 11.5a1 1 0 0 0 .5 1.9h15a1 1 0 0 0 .5-1.9L12 6.5Z"/><path d="M6 14l-1 5h14l-1-5"/></svg></div>
-      <strong>No hay avisos con esos filtros</strong>
+  <main class="max-w-3xl mx-auto px-4 pb-24">
+    <div id="grid" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"></div>
+    <div id="emptyState" class="text-center py-16 px-4 text-ink-soft">
+      <div class="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center bg-gradient-to-br from-thread-soft to-accent-soft text-thread-dark">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a1.5 1.5 0 1 1 1.5 1.5"/><path d="M12 4.5v2"/><path d="M12 6.5L4 11.5a1 1 0 0 0 .5 1.9h15a1 1 0 0 0 .5-1.9L12 6.5Z"/><path d="M6 14l-1 5h14l-1-5"/></svg>
+      </div>
+      <strong class="block text-ink font-bold mb-1">No hay avisos con esos filtros</strong>
       <span>Prueba quitando algún filtro, o publica el primero.</span>
     </div>
   </main>
 </div>
 
 <div id="mercaderiaView" class="hidden">
-  <div class="wrap">
-    <div class="tabs" role="tablist" aria-label="Tipo de publicación">
-      <button class="tipo-tab" data-tipo="" aria-pressed="true">Todos</button>
-      <button class="tipo-tab" data-tipo="vendo" aria-pressed="false">Vendo mercadería</button>
-      <button class="tipo-tab" data-tipo="compro" aria-pressed="false">Busco comprar</button>
+  <div class="max-w-3xl mx-auto px-4">
+    <div class="flex gap-2 overflow-x-auto scrollbar-none py-4" role="tablist" aria-label="Tipo de publicación">
+      <button class="tipo-tab whitespace-nowrap px-4 py-2 rounded-full text-[13px] font-bold border border-transparent bg-stone-100 text-ink cursor-pointer hover:-translate-y-0.5 transition-all" data-tipo="" aria-pressed="true">Todos</button>
+      <button class="tipo-tab whitespace-nowrap px-4 py-2 rounded-full text-[13px] font-bold border border-transparent bg-stone-100 text-ink cursor-pointer hover:-translate-y-0.5 transition-all" data-tipo="vendo" aria-pressed="false">Vendo mercadería</button>
+      <button class="tipo-tab whitespace-nowrap px-4 py-2 rounded-full text-[13px] font-bold border border-transparent bg-stone-100 text-ink cursor-pointer hover:-translate-y-0.5 transition-all" data-tipo="compro" aria-pressed="false">Busco comprar</button>
     </div>
 
-    <div class="filters">
-      <input id="mercSearchInput" type="text" placeholder="Buscar (polos, jean, mayorista...)" class="full">
-      <select id="mercFilterZona"><option value="">Toda zona</option></select>
-      <label class="check-pill"><input id="mercFilterUrgente" type="checkbox"> Solo urgentes</label>
+    <div class="grid grid-cols-2 gap-2.5 mb-1 sm:[grid-template-columns:1.6fr_1fr_auto] sm:items-center">
+      <input id="mercSearchInput" type="text" placeholder="Buscar (polos, jean, mayorista...)" class="col-span-2 sm:col-auto w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-thread focus-visible:outline-offset-2">
+      <select id="mercFilterZona" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-thread focus-visible:outline-offset-2"><option value="">Toda zona</option></select>
+      <label class="flex items-center gap-2 text-[14px] font-semibold bg-white border border-stone-200 rounded-full px-3.5 py-2.5 cursor-pointer"><input id="mercFilterUrgente" type="checkbox" class="accent-thread w-4 h-4"> Solo urgentes</label>
     </div>
-    <p id="mercResultCount"></p>
+    <p id="mercResultCount" class="text-[12px] text-ink-soft mb-3"></p>
   </div>
 
-  <main class="wrap">
-    <div id="mercGrid"></div>
-    <div id="mercEmptyState">
-      <div class="empty-illustration"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a1.5 1.5 0 1 1 1.5 1.5"/><path d="M12 4.5v2"/><path d="M12 6.5L4 11.5a1 1 0 0 0 .5 1.9h15a1 1 0 0 0 .5-1.9L12 6.5Z"/><path d="M6 14l-1 5h14l-1-5"/></svg></div>
-      <strong>No hay publicaciones con esos filtros</strong>
+  <main class="max-w-3xl mx-auto px-4 pb-24">
+    <div id="mercGrid" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"></div>
+    <div id="mercEmptyState" class="text-center py-16 px-4 text-ink-soft">
+      <div class="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center bg-gradient-to-br from-thread-soft to-accent-soft text-thread-dark">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a1.5 1.5 0 1 1 1.5 1.5"/><path d="M12 4.5v2"/><path d="M12 6.5L4 11.5a1 1 0 0 0 .5 1.9h15a1 1 0 0 0 .5-1.9L12 6.5Z"/><path d="M6 14l-1 5h14l-1-5"/></svg>
+      </div>
+      <strong class="block text-ink font-bold mb-1">No hay publicaciones con esos filtros</strong>
       <span>Prueba quitando algún filtro, o publica la primera.</span>
     </div>
   </main>
 </div>
 
-<button id="fab" type="button" aria-label="Publicar aviso"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+<button id="fab" type="button" aria-label="Publicar aviso" class="fixed right-4 bottom-4 z-30 w-14 h-14 rounded-full text-white border-[3px] border-white text-xl cursor-pointer transition-transform">
+  <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+</button>
 
 <div id="modal">
-  <form id="publishForm">
-    <div class="modal-head">
-      <h2 id="modalTitle">Publicar aviso</h2>
-      <button type="button" id="closeModal" aria-label="Cerrar"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <form id="publishForm" class="bg-white text-ink w-full max-w-lg max-h-[92vh] overflow-y-auto p-6 rounded-t-[1.6rem] sm:rounded-[1.6rem]">
+    <div class="flex items-center justify-between mb-4">
+      <h2 id="modalTitle" class="font-display text-lg font-semibold m-0">Publicar aviso</h2>
+      <button type="button" id="closeModal" aria-label="Cerrar" class="w-8 h-8 rounded-full border-0 bg-transparent text-ink-soft hover:bg-stone-100 hover:text-ink cursor-pointer"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
 
-    <div class="field">
-      <label id="tipoLabel">¿Qué quieres publicar?</label>
-      <div class="tipo-choice" role="radiogroup" aria-labelledby="tipoLabel">
+    <div class="mb-4">
+      <label id="tipoLabel" class="block text-[14px] font-semibold mb-2">¿Qué quieres publicar?</label>
+      <div class="tipo-choice grid grid-cols-2 gap-2" role="radiogroup" aria-labelledby="tipoLabel">
         <label><input type="radio" name="tipo" value="ofrezco" checked><span>Necesito personal (taller)</span></label>
         <label><input type="radio" name="tipo" value="busco"><span>Busco trabajo (costurero/a)</span></label>
       </div>
     </div>
 
-    <div class="field">
-      <label for="formFoto">Fotos (hasta 3, opcional)</label>
-      <div class="foto-picker">
-        <input id="formFoto" type="file" accept="image/*" multiple class="hidden-file-input">
-        <label for="formFoto" id="formFotoLabel" class="foto-picker-btn"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Agregar foto</label>
-        <div id="formFotoPreviewList" class="foto-preview-list"></div>
+    <div class="mb-4">
+      <label for="formFoto" class="block text-[14px] font-semibold mb-2">Fotos (hasta 3, opcional)</label>
+      <div>
+        <input id="formFoto" type="file" accept="image/*" multiple class="absolute opacity-0 w-px h-px overflow-hidden">
+        <label for="formFoto" id="formFotoLabel" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full border-[1.5px] border-dashed border-thread bg-thread-soft text-thread-dark text-[14px] font-bold cursor-pointer hover:bg-thread hover:text-white hover:border-solid transition-colors"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Agregar foto</label>
+        <div id="formFotoPreviewList" class="mt-2 flex flex-wrap gap-2 empty:mt-0"></div>
       </div>
-      <p class="hint">El taller puede mostrar fotos del taller o del trabajo; el costurero/a puede mostrar su propio trabajo. Se comprimen automáticamente.</p>
-      <label id="formFotoConfirmWrap" class="check-pill hidden" style="margin-top:.6rem;">
-        <input id="formFotoConfirm" type="checkbox"> Confirmo que mis fotos son apropiadas para el aviso (nada de contenido explícito u ofensivo)
+      <p class="text-[12px] text-ink-soft mt-1.5">El taller puede mostrar fotos del taller o del trabajo; el costurero/a puede mostrar su propio trabajo. Se comprimen automáticamente.</p>
+      <label id="formFotoConfirmWrap" class="hidden items-center gap-2 text-[14px] font-semibold bg-white border border-stone-200 rounded-full px-3.5 py-2.5 mt-2.5">
+        <input id="formFotoConfirm" type="checkbox" class="accent-thread w-4 h-4"> Confirmo que mis fotos son apropiadas para el aviso (nada de contenido explícito u ofensivo)
       </label>
     </div>
 
-    <p class="section-title">El trabajo</p>
+    <p class="text-[11px] font-bold uppercase tracking-wide text-thread-dark mt-0 mb-3 pt-0 border-t-0">El trabajo</p>
 
-    <div class="field">
-      <label id="perfilLabel">Perfil de trabajo</label>
-      <div id="perfilChips" class="cat-chips" role="group" aria-labelledby="perfilLabel"></div>
+    <div class="mb-4">
+      <label id="perfilLabel" class="block text-[14px] font-semibold mb-2">Perfil de trabajo</label>
+      <div id="perfilChips" class="flex flex-wrap gap-1.5" role="group" aria-labelledby="perfilLabel"></div>
     </div>
 
-    <div class="field">
-      <label id="prendaLabel">Prenda(s) que trabaja</label>
-      <div id="prendaChips" class="cat-chips" role="group" aria-labelledby="prendaLabel"></div>
-      <div id="prendaOtroField" class="otro-field hidden">
-        <input id="prendaOtro" type="text" placeholder="¿Qué otra prenda? (separa con coma si son varias)">
+    <div class="mb-4">
+      <label id="prendaLabel" class="block text-[14px] font-semibold mb-2">Prenda(s) que trabaja</label>
+      <div id="prendaChips" class="flex flex-wrap gap-1.5" role="group" aria-labelledby="prendaLabel"></div>
+      <div id="prendaOtroField" class="hidden mt-2">
+        <input id="prendaOtro" type="text" placeholder="¿Qué otra prenda? (separa con coma si son varias)" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
       </div>
     </div>
 
-    <div class="field">
-      <label id="telaLabel">Tela que maneja</label>
-      <div id="telaChips" class="cat-chips" role="group" aria-labelledby="telaLabel"></div>
-      <div id="telaOtroField" class="otro-field hidden">
-        <input id="telaOtro" type="text" placeholder="¿Qué otra tela?">
+    <div class="mb-4">
+      <label id="telaLabel" class="block text-[14px] font-semibold mb-2">Tela que maneja</label>
+      <div id="telaChips" class="flex flex-wrap gap-1.5" role="group" aria-labelledby="telaLabel"></div>
+      <div id="telaOtroField" class="hidden mt-2">
+        <input id="telaOtro" type="text" placeholder="¿Qué otra tela?" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
       </div>
     </div>
 
-    <div class="field">
-      <label for="formExperiencia">Años de experiencia</label>
-      <select id="formExperiencia"><option value="">No especificar</option></select>
+    <div class="mb-4">
+      <label for="formExperiencia" class="block text-[14px] font-semibold mb-2">Años de experiencia</label>
+      <select id="formExperiencia" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5"><option value="">No especificar</option></select>
     </div>
 
     <div id="maquinaSection">
-      <div class="field">
-        <label id="maquinaLabel">Máquina(s) que domina</label>
-        <div id="maquinaChips" class="cat-chips" role="group" aria-labelledby="maquinaLabel"></div>
-        <div id="maquinaOtroField" class="otro-field hidden">
-          <input id="maquinaOtro" type="text" placeholder="¿Qué otra máquina?">
+      <div class="mb-4">
+        <label id="maquinaLabel" class="block text-[14px] font-semibold mb-2">Máquina(s) que domina</label>
+        <div id="maquinaChips" class="flex flex-wrap gap-1.5" role="group" aria-labelledby="maquinaLabel"></div>
+        <div id="maquinaOtroField" class="hidden mt-2">
+          <input id="maquinaOtro" type="text" placeholder="¿Qué otra máquina?" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
         </div>
       </div>
-      <div class="field">
-        <label id="operacionLabel">Operación</label>
-        <div id="operacionChips" class="cat-chips" role="group" aria-labelledby="operacionLabel"></div>
-        <div id="operacionOtroField" class="otro-field hidden">
-          <input id="operacionOtro" type="text" placeholder="¿Qué otra operación?">
+      <div class="mb-4">
+        <label id="operacionLabel" class="block text-[14px] font-semibold mb-2">Operación</label>
+        <div id="operacionChips" class="flex flex-wrap gap-1.5" role="group" aria-labelledby="operacionLabel"></div>
+        <div id="operacionOtroField" class="hidden mt-2">
+          <input id="operacionOtro" type="text" placeholder="¿Qué otra operación?" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
         </div>
       </div>
     </div>
 
     <div id="manualSection">
-      <div class="field">
-        <label id="manualLabel">Labor manual</label>
-        <div id="manualChips" class="cat-chips" role="group" aria-labelledby="manualLabel"></div>
-        <div id="manualOtroField" class="otro-field hidden">
-          <input id="manualOtro" type="text" placeholder="¿Qué otra labor manual?">
+      <div class="mb-4">
+        <label id="manualLabel" class="block text-[14px] font-semibold mb-2">Labor manual</label>
+        <div id="manualChips" class="flex flex-wrap gap-1.5" role="group" aria-labelledby="manualLabel"></div>
+        <div id="manualOtroField" class="hidden mt-2">
+          <input id="manualOtro" type="text" placeholder="¿Qué otra labor manual?" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
         </div>
       </div>
     </div>
 
-    <div id="tallerSection" class="field">
-      <label for="formTamanoTaller">Tamaño del taller</label>
-      <select id="formTamanoTaller"><option value="">No especificar</option></select>
+    <div id="tallerSection" class="mb-4">
+      <label for="formTamanoTaller" class="block text-[14px] font-semibold mb-2">Tamaño del taller</label>
+      <select id="formTamanoTaller" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5"><option value="">No especificar</option></select>
     </div>
 
-    <p class="section-title">Pago y horario</p>
+    <p class="text-[11px] font-bold uppercase tracking-wide text-thread-dark mt-6 mb-3 pt-3.5 border-t border-stone-200">Pago y horario</p>
 
-    <div class="field field-grid">
+    <div class="mb-4 grid grid-cols-2 gap-2.5">
       <div>
-        <label id="formZonaLabel" for="formZona">Zona</label>
-        <select id="formZona" required></select>
-        <div id="zonaOtroField" class="otro-field hidden">
-          <input id="zonaOtro" type="text" placeholder="¿Qué distrito/zona?">
+        <label id="formZonaLabel" for="formZona" class="block text-[14px] font-semibold mb-2">Zona</label>
+        <select id="formZona" required class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5"></select>
+        <div id="zonaOtroField" class="hidden mt-2">
+          <input id="zonaOtro" type="text" placeholder="¿Qué distrito/zona?" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
         </div>
       </div>
       <div>
-        <label for="formModalidadPago">Modalidad de pago</label>
-        <select id="formModalidadPago"><option value="">No especificar</option></select>
+        <label for="formModalidadPago" class="block text-[14px] font-semibold mb-2">Modalidad de pago</label>
+        <select id="formModalidadPago" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5"><option value="">No especificar</option></select>
       </div>
     </div>
 
-    <div id="zonaTrabajoSection" class="field hidden">
-      <label id="zonaTrabajoLabel">¿En qué otras zonas te gustaría trabajar? (opcional)</label>
-      <div id="zonaTrabajoChips" class="cat-chips" role="group" aria-labelledby="zonaTrabajoLabel"></div>
-      <div id="zonaTrabajoOtroField" class="otro-field hidden">
-        <input id="zonaTrabajoOtro" type="text" placeholder="¿Qué otra zona?">
+    <div id="zonaTrabajoSection" class="hidden mb-4">
+      <label id="zonaTrabajoLabel" class="block text-[14px] font-semibold mb-2">¿En qué otras zonas te gustaría trabajar? (opcional)</label>
+      <div id="zonaTrabajoChips" class="flex flex-wrap gap-1.5" role="group" aria-labelledby="zonaTrabajoLabel"></div>
+      <div id="zonaTrabajoOtroField" class="hidden mt-2">
+        <input id="zonaTrabajoOtro" type="text" placeholder="¿Qué otra zona?" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
       </div>
-      <p class="hint">Si no marcas ninguna, se asume que solo te interesa cerca de donde vives.</p>
+      <p class="text-[12px] text-ink-soft mt-1.5">Si no marcas ninguna, se asume que solo te interesa cerca de donde vives.</p>
     </div>
 
-    <div class="field">
-      <label for="formPago">Monto (opcional)</label>
-      <input id="formPago" type="text" placeholder="S/1300 semanal, S/0.30 por operación...">
+    <div class="mb-4">
+      <label for="formPago" class="block text-[14px] font-semibold mb-2">Monto (opcional)</label>
+      <input id="formPago" type="text" placeholder="S/1300 semanal, S/0.30 por operación..." class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
     </div>
 
-    <div class="field">
-      <label id="dispoLabel">Disponibilidad</label>
-      <div id="disponibilidadChips" class="cat-chips" role="group" aria-labelledby="dispoLabel"></div>
+    <div class="mb-4">
+      <label id="dispoLabel" class="block text-[14px] font-semibold mb-2">Disponibilidad</label>
+      <div id="disponibilidadChips" class="flex flex-wrap gap-1.5" role="group" aria-labelledby="dispoLabel"></div>
     </div>
 
-    <p class="section-title">Contacto</p>
+    <p class="text-[11px] font-bold uppercase tracking-wide text-thread-dark mt-6 mb-3 pt-3.5 border-t border-stone-200">Contacto</p>
 
-    <div class="field">
-      <label for="formContacto">Nombre / taller</label>
-      <input id="formContacto" type="text" required placeholder="Ej: Taller Confecciones Ate">
+    <div class="mb-4">
+      <label for="formContacto" class="block text-[14px] font-semibold mb-2">Nombre / taller</label>
+      <input id="formContacto" type="text" required placeholder="Ej: Taller Confecciones Ate" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
     </div>
 
-    <div class="field">
-      <label for="formWhatsapp">WhatsApp</label>
-      <input id="formWhatsapp" type="tel" required placeholder="9XXXXXXXX">
-      <p class="hint">9 dígitos, sin +51. Quien te contacte escribirá directo a este número.</p>
+    <div class="mb-4">
+      <label for="formWhatsapp" class="block text-[14px] font-semibold mb-2">WhatsApp</label>
+      <input id="formWhatsapp" type="tel" required placeholder="9XXXXXXXX" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
+      <p class="text-[12px] text-ink-soft mt-1.5">9 dígitos, sin +51. Quien te contacte escribirá directo a este número.</p>
     </div>
 
-    <div class="field">
-      <label for="formDocumento">DNI o RUC (opcional)</label>
-      <input id="formDocumento" type="text" inputmode="numeric" placeholder="DNI: 8 dígitos · RUC: 11 dígitos">
-      <p class="hint">Da más confianza. El RUC se muestra completo (es público); el DNI nunca se muestra, solo aparece como "registrado".</p>
+    <div class="mb-4">
+      <label for="formDocumento" class="block text-[14px] font-semibold mb-2">DNI o RUC (opcional)</label>
+      <input id="formDocumento" type="text" inputmode="numeric" placeholder="DNI: 8 dígitos · RUC: 11 dígitos" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
+      <p class="text-[12px] text-ink-soft mt-1.5">Da más confianza. El RUC se muestra completo (es público); el DNI nunca se muestra, solo aparece como "registrado".</p>
     </div>
 
-    <div class="field">
-      <label for="formDescripcion">Información extra (opcional)</label>
-      <textarea id="formDescripcion" rows="2" placeholder="Dónde has trabajado antes, referencias, dirección exacta, horario específico..."></textarea>
+    <div class="mb-4">
+      <label for="formDescripcion" class="block text-[14px] font-semibold mb-2">Información extra (opcional)</label>
+      <textarea id="formDescripcion" rows="2" placeholder="Dónde has trabajado antes, referencias, dirección exacta, horario específico..." class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft"></textarea>
     </div>
 
-    <label class="check-pill" style="margin-bottom:1.2rem;">
-      <input id="formUrgente" type="checkbox"> Marcar como urgente
+    <label class="flex items-center gap-2 text-[14px] font-semibold bg-white border border-stone-200 rounded-full px-3.5 py-2.5 mb-5">
+      <input id="formUrgente" type="checkbox" class="accent-thread w-4 h-4"> Marcar como urgente
     </label>
 
-    <button type="submit" id="submitBtn" class="submit-btn">Publicar aviso</button>
-    <p class="form-note">Este directorio guarda los avisos en este navegador (demo). Para compartirlo con todos hace falta conectar una base de datos real.</p>
-    <p class="form-note">¿Quieres que tu aviso se destaque o dure más tiempo? Yapea a <strong>926924581</strong> y <a href="#" class="yape-confirm-link">avísanos por correo</a>.</p>
+    <button type="submit" id="submitBtn" class="submit-btn w-full py-3.5 border-0 rounded-full text-white font-extrabold text-[15px] cursor-pointer transition-transform">Publicar aviso</button>
+    <p class="text-[11px] text-center text-ink-soft mt-3">Este directorio guarda los avisos en este navegador (demo). Para compartirlo con todos hace falta conectar una base de datos real.</p>
+    <p class="text-[11px] text-center text-ink-soft mt-2">¿Quieres que tu aviso se destaque o dure más tiempo? Yapea a <strong>926924581</strong> y <a href="#" class="yape-confirm-link underline">avísanos por correo</a>.</p>
   </form>
 </div>
 
 <div id="mercModal">
-  <form id="mercForm">
-    <div class="modal-head">
-      <h2 id="mercModalTitle">Publicar mercadería</h2>
-      <button type="button" id="mercCloseModal" aria-label="Cerrar"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <form id="mercForm" class="bg-white text-ink w-full max-w-lg max-h-[92vh] overflow-y-auto p-6 rounded-t-[1.6rem] sm:rounded-[1.6rem]">
+    <div class="flex items-center justify-between mb-4">
+      <h2 id="mercModalTitle" class="font-display text-lg font-semibold m-0">Publicar mercadería</h2>
+      <button type="button" id="mercCloseModal" aria-label="Cerrar" class="w-8 h-8 rounded-full border-0 bg-transparent text-ink-soft hover:bg-stone-100 hover:text-ink cursor-pointer"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
 
-    <div class="field">
-      <label id="mercTipoLabel">¿Qué quieres publicar?</label>
-      <div class="tipo-choice" role="radiogroup" aria-labelledby="mercTipoLabel">
+    <div class="mb-4">
+      <label id="mercTipoLabel" class="block text-[14px] font-semibold mb-2">¿Qué quieres publicar?</label>
+      <div class="tipo-choice grid grid-cols-2 gap-2" role="radiogroup" aria-labelledby="mercTipoLabel">
         <label><input type="radio" name="mercTipo" value="vendo" checked><span>Vendo mercadería</span></label>
         <label><input type="radio" name="mercTipo" value="compro"><span>Busco comprar</span></label>
       </div>
     </div>
 
-    <div class="field">
-      <label for="mercFoto">Fotos (hasta 3, opcional)</label>
-      <div class="foto-picker">
-        <input id="mercFoto" type="file" accept="image/*" multiple class="hidden-file-input">
-        <label for="mercFoto" id="mercFotoLabel" class="foto-picker-btn"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Agregar foto</label>
-        <div id="mercFotoPreviewList" class="foto-preview-list"></div>
+    <div class="mb-4">
+      <label for="mercFoto" class="block text-[14px] font-semibold mb-2">Fotos (hasta 3, opcional)</label>
+      <div>
+        <input id="mercFoto" type="file" accept="image/*" multiple class="absolute opacity-0 w-px h-px overflow-hidden">
+        <label for="mercFoto" id="mercFotoLabel" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full border-[1.5px] border-dashed border-thread bg-thread-soft text-thread-dark text-[14px] font-bold cursor-pointer hover:bg-thread hover:text-white hover:border-solid transition-colors"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Agregar foto</label>
+        <div id="mercFotoPreviewList" class="mt-2 flex flex-wrap gap-2 empty:mt-0"></div>
       </div>
-      <p class="hint">Se comprimen automáticamente. Los videos no caben aquí — un solo video pesa más que todo el espacio disponible en este navegador; se comparten directo por WhatsApp una vez que te escriban.</p>
-      <label id="mercFotoConfirmWrap" class="check-pill hidden" style="margin-top:.6rem;">
-        <input id="mercFotoConfirm" type="checkbox"> Confirmo que mis fotos son apropiadas para el aviso (nada de contenido explícito u ofensivo)
+      <p class="text-[12px] text-ink-soft mt-1.5">Se comprimen automáticamente. Los videos no caben aquí — un solo video pesa más que todo el espacio disponible en este navegador; se comparten directo por WhatsApp una vez que te escriban.</p>
+      <label id="mercFotoConfirmWrap" class="hidden items-center gap-2 text-[14px] font-semibold bg-white border border-stone-200 rounded-full px-3.5 py-2.5 mt-2.5">
+        <input id="mercFotoConfirm" type="checkbox" class="accent-thread w-4 h-4"> Confirmo que mis fotos son apropiadas para el aviso (nada de contenido explícito u ofensivo)
       </label>
     </div>
 
-    <div class="field">
-      <label id="mercItemLabel">¿Qué prenda(s) o insumo(s)?</label>
-      <div id="mercItemChips" class="cat-chips" role="group" aria-labelledby="mercItemLabel"></div>
-      <div id="mercItemOtroField" class="otro-field hidden">
-        <input id="mercItemOtro" type="text" placeholder="¿Qué otra prenda o insumo? (separa con coma si son varios)">
+    <div class="mb-4">
+      <label id="mercItemLabel" class="block text-[14px] font-semibold mb-2">¿Qué prenda(s) o insumo(s)?</label>
+      <div id="mercItemChips" class="flex flex-wrap gap-1.5" role="group" aria-labelledby="mercItemLabel"></div>
+      <div id="mercItemOtroField" class="hidden mt-2">
+        <input id="mercItemOtro" type="text" placeholder="¿Qué otra prenda o insumo? (separa con coma si son varios)" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
       </div>
     </div>
 
-    <div class="field">
-      <label id="mercTallaLabel">Talla(s)</label>
-      <div id="mercTallaChips" class="cat-chips" role="group" aria-labelledby="mercTallaLabel"></div>
-      <div id="mercTallaOtroField" class="otro-field hidden">
-        <input id="mercTallaOtro" type="text" placeholder="¿Qué otra talla? (ej: 28, 30, 32...)">
+    <div class="mb-4">
+      <label id="mercTallaLabel" class="block text-[14px] font-semibold mb-2">Talla(s)</label>
+      <div id="mercTallaChips" class="flex flex-wrap gap-1.5" role="group" aria-labelledby="mercTallaLabel"></div>
+      <div id="mercTallaOtroField" class="hidden mt-2">
+        <input id="mercTallaOtro" type="text" placeholder="¿Qué otra talla? (ej: 28, 30, 32...)" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
       </div>
     </div>
 
-    <div class="field">
-      <label id="mercColorLabel">Color(es)</label>
-      <div id="mercColorChips" class="cat-chips" role="group" aria-labelledby="mercColorLabel"></div>
-      <div id="mercColorOtroField" class="otro-field hidden">
-        <input id="mercColorOtro" type="text" placeholder="¿Qué otro color?">
+    <div class="mb-4">
+      <label id="mercColorLabel" class="block text-[14px] font-semibold mb-2">Color(es)</label>
+      <div id="mercColorChips" class="flex flex-wrap gap-1.5" role="group" aria-labelledby="mercColorLabel"></div>
+      <div id="mercColorOtroField" class="hidden mt-2">
+        <input id="mercColorOtro" type="text" placeholder="¿Qué otro color?" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
       </div>
     </div>
 
-    <div class="field field-grid">
+    <div class="mb-4 grid grid-cols-2 gap-2.5">
       <div>
-        <label for="mercCantidad">Cantidad</label>
-        <input id="mercCantidad" type="text" placeholder="500 unidades, por rollo...">
+        <label for="mercCantidad" class="block text-[14px] font-semibold mb-2">Cantidad</label>
+        <input id="mercCantidad" type="text" placeholder="500 unidades, por rollo..." class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
       </div>
       <div>
-        <label for="mercVentaTipo">Venta</label>
-        <select id="mercVentaTipo" required><option value="">Selecciona...</option></select>
+        <label for="mercVentaTipo" class="block text-[14px] font-semibold mb-2">Venta</label>
+        <select id="mercVentaTipo" required class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5"><option value="">Selecciona...</option></select>
       </div>
     </div>
 
-    <div id="precioMayorField" class="field hidden">
-      <label for="mercPrecioMayor">Precio por mayor</label>
-      <input id="mercPrecioMayor" type="text" placeholder="S/15 por unidad">
+    <div id="precioMayorField" class="hidden mb-4">
+      <label for="mercPrecioMayor" class="block text-[14px] font-semibold mb-2">Precio por mayor</label>
+      <input id="mercPrecioMayor" type="text" placeholder="S/15 por unidad" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
     </div>
 
-    <div id="precioMenorField" class="field hidden">
-      <label for="mercPrecioMenor">Precio por menor</label>
-      <input id="mercPrecioMenor" type="text" placeholder="S/25 por unidad">
+    <div id="precioMenorField" class="hidden mb-4">
+      <label for="mercPrecioMenor" class="block text-[14px] font-semibold mb-2">Precio por menor</label>
+      <input id="mercPrecioMenor" type="text" placeholder="S/25 por unidad" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
     </div>
 
-    <div class="field">
-      <label id="mercModalidadVentaLabel">Modalidad de venta</label>
-      <div id="mercModalidadVentaChips" class="cat-chips" role="group" aria-labelledby="mercModalidadVentaLabel"></div>
-      <div id="mercModalidadVentaOtroField" class="otro-field hidden">
-        <input id="mercModalidadVentaOtro" type="text" placeholder="¿Qué otra modalidad?">
+    <div class="mb-4">
+      <label id="mercModalidadVentaLabel" class="block text-[14px] font-semibold mb-2">Modalidad de venta</label>
+      <div id="mercModalidadVentaChips" class="flex flex-wrap gap-1.5" role="group" aria-labelledby="mercModalidadVentaLabel"></div>
+      <div id="mercModalidadVentaOtroField" class="hidden mt-2">
+        <input id="mercModalidadVentaOtro" type="text" placeholder="¿Qué otra modalidad?" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
       </div>
     </div>
 
-    <div class="field">
-      <label for="mercZona">Zona</label>
-      <select id="mercZona" required></select>
-      <div id="mercZonaOtroField" class="otro-field hidden">
-        <input id="mercZonaOtro" type="text" placeholder="¿Qué distrito/zona?">
+    <div class="mb-4">
+      <label for="mercZona" class="block text-[14px] font-semibold mb-2">Zona</label>
+      <select id="mercZona" required class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5"></select>
+      <div id="mercZonaOtroField" class="hidden mt-2">
+        <input id="mercZonaOtro" type="text" placeholder="¿Qué distrito/zona?" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
       </div>
     </div>
 
-    <div class="field">
-      <label for="mercContacto">Nombre</label>
-      <input id="mercContacto" type="text" required placeholder="Tu nombre o el de tu negocio">
+    <div class="mb-4">
+      <label for="mercContacto" class="block text-[14px] font-semibold mb-2">Nombre</label>
+      <input id="mercContacto" type="text" required placeholder="Tu nombre o el de tu negocio" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
     </div>
 
-    <div class="field">
-      <label for="mercWhatsapp">WhatsApp</label>
-      <input id="mercWhatsapp" type="tel" required placeholder="9XXXXXXXX">
-      <p class="hint">9 dígitos, sin +51. Las fotos y videos los mandas directo por ese chat una vez que te escriban.</p>
+    <div class="mb-4">
+      <label for="mercWhatsapp" class="block text-[14px] font-semibold mb-2">WhatsApp</label>
+      <input id="mercWhatsapp" type="tel" required placeholder="9XXXXXXXX" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
+      <p class="text-[12px] text-ink-soft mt-1.5">9 dígitos, sin +51. Las fotos y videos los mandas directo por ese chat una vez que te escriban.</p>
     </div>
 
-    <div class="field">
-      <label for="mercDocumento">DNI o RUC (opcional)</label>
-      <input id="mercDocumento" type="text" inputmode="numeric" placeholder="DNI: 8 dígitos · RUC: 11 dígitos">
-      <p class="hint">Da más confianza. El RUC se muestra completo (es público); el DNI nunca se muestra, solo aparece como "registrado".</p>
+    <div class="mb-4">
+      <label for="mercDocumento" class="block text-[14px] font-semibold mb-2">DNI o RUC (opcional)</label>
+      <input id="mercDocumento" type="text" inputmode="numeric" placeholder="DNI: 8 dígitos · RUC: 11 dígitos" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
+      <p class="text-[12px] text-ink-soft mt-1.5">Da más confianza. El RUC se muestra completo (es público); el DNI nunca se muestra, solo aparece como "registrado".</p>
     </div>
 
-    <div class="field">
-      <label for="mercDescripcion">Información extra (opcional)</label>
-      <textarea id="mercDescripcion" rows="2" placeholder="Marca, estado de la mercadería, cualquier otro detalle..."></textarea>
+    <div class="mb-4">
+      <label for="mercDescripcion" class="block text-[14px] font-semibold mb-2">Información extra (opcional)</label>
+      <textarea id="mercDescripcion" rows="2" placeholder="Marca, estado de la mercadería, cualquier otro detalle..." class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft"></textarea>
     </div>
 
-    <label class="check-pill" style="margin-bottom:1.2rem;">
-      <input id="mercUrgente" type="checkbox"> Marcar como urgente (ej. liquidación)
+    <label class="flex items-center gap-2 text-[14px] font-semibold bg-white border border-stone-200 rounded-full px-3.5 py-2.5 mb-5">
+      <input id="mercUrgente" type="checkbox" class="accent-thread w-4 h-4"> Marcar como urgente (ej. liquidación)
     </label>
 
-    <button type="submit" id="mercSubmitBtn" class="submit-btn">Publicar</button>
-    <p class="form-note">El video no se sube aquí (no cabe) — se comparte directo por WhatsApp una vez que te escriban.</p>
-    <p class="form-note">¿Quieres que tu aviso se destaque o dure más tiempo? Yapea a <strong>926924581</strong> y <a href="#" class="yape-confirm-link">avísanos por correo</a>.</p>
+    <button type="submit" id="mercSubmitBtn" class="submit-btn w-full py-3.5 border-0 rounded-full text-white font-extrabold text-[15px] cursor-pointer transition-transform">Publicar</button>
+    <p class="text-[11px] text-center text-ink-soft mt-3">El video no se sube aquí (no cabe) — se comparte directo por WhatsApp una vez que te escriban.</p>
+    <p class="text-[11px] text-center text-ink-soft mt-2">¿Quieres que tu aviso se destaque o dure más tiempo? Yapea a <strong>926924581</strong> y <a href="#" class="yape-confirm-link underline">avísanos por correo</a>.</p>
   </form>
 </div>
 
 <template id="cardTemplate">
   <article class="card">
-    <div class="card-photos"></div>
-    <div class="badge-row">
-      <span class="badge tipo-badge"></span>
-      <span class="badge badge-urgente urgente-badge">Urgente</span>
+    <div class="card-photos flex gap-1.5 overflow-x-auto empty:hidden"></div>
+    <div class="flex items-center justify-between gap-2">
+      <span class="badge tipo-badge text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full"></span>
+      <span class="badge badge-urgente urgente-badge text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full">Urgente</span>
     </div>
-    <div class="owner-actions hidden">
-      <button type="button" class="ghost-btn edit-btn"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg> Editar</button>
-      <button type="button" class="ghost-btn delete-btn"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg> Eliminar</button>
+    <div class="owner-actions hidden flex gap-1 justify-end">
+      <button type="button" class="ghost-btn edit-btn flex items-center gap-1 text-[12px] font-semibold bg-transparent border-0 text-ink-soft cursor-pointer px-1.5 py-1 rounded-lg hover:bg-stone-100 hover:text-thread-dark"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg> Editar</button>
+      <button type="button" class="ghost-btn delete-btn flex items-center gap-1 text-[12px] font-semibold bg-transparent border-0 text-ink-soft cursor-pointer px-1.5 py-1 rounded-lg hover:bg-stone-100 hover:text-red-600"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg> Eliminar</button>
     </div>
-    <h3 class="contacto-name"></h3>
-    <p class="zona-line"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg><span></span></p>
-    <p class="doc-line"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span></span></p>
-    <div class="cat-chips perfil-chips"></div>
-    <div class="meta-lines"></div>
-    <div class="cat-chips skill-chips"></div>
-    <p class="pago-text"></p>
-    <div class="cat-chips disponibilidad-chips"></div>
-    <p class="desc-text"></p>
-    <a target="_blank" rel="noopener" class="wa-link"><svg class="icon" width="17" height="17" viewBox="0 0 32 32" fill="currentColor"><path d="M16.04 3C9.37 3 3.97 8.4 3.97 15.07c0 2.36.66 4.56 1.8 6.44L3 29l7.68-2.02a12.03 12.03 0 0 0 5.36 1.26h.01c6.67 0 12.07-5.4 12.07-12.07C28.12 8.5 22.71 3.1 16.04 3zm0 22.02h-.01a10.1 10.1 0 0 1-5.14-1.4l-.37-.22-3.83 1 1.02-3.73-.24-.38a9.98 9.98 0 0 1-1.53-5.32c0-5.53 4.5-10.03 10.05-10.03 2.69 0 5.21 1.05 7.1 2.95a9.94 9.94 0 0 1 2.95 7.1c0 5.53-4.5 10.03-10.02 10.03zm5.5-7.5c-.3-.15-1.78-.88-2.06-.98-.28-.1-.48-.15-.68.15-.2.3-.78.98-.96 1.18-.18.2-.35.22-.65.08-.3-.15-1.26-.46-2.4-1.47-.89-.79-1.48-1.77-1.66-2.07-.17-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.65-.94-2.26-.25-.6-.5-.5-.68-.5h-.58c-.2 0-.53.08-.8.38-.28.3-1.05 1.02-1.05 2.5s1.08 2.9 1.23 3.1c.15.2 2.13 3.24 5.16 4.55.72.31 1.28.5 1.72.64.72.23 1.38.2 1.9.12.58-.09 1.78-.73 2.03-1.43.25-.7.25-1.3.18-1.43-.07-.13-.27-.2-.57-.35z"/></svg> Contactar por WhatsApp</a>
-    <button type="button" class="report-link">Reportar este aviso</button>
+    <h3 class="contacto-name text-[16px] font-semibold m-0 leading-tight"></h3>
+    <p class="zona-line flex items-center gap-1.5 text-[13px] text-ink-soft m-0"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg><span></span></p>
+    <p class="doc-line flex items-center gap-1 text-[12px] font-bold text-ofrezco m-0"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span></span></p>
+    <div class="perfil-chips flex flex-wrap gap-1.5 empty:hidden"></div>
+    <div class="meta-lines flex flex-col gap-0.5"></div>
+    <div class="skill-chips flex flex-wrap gap-1.5 empty:hidden"></div>
+    <p class="pago-text text-[14px] font-bold m-0"></p>
+    <div class="disponibilidad-chips flex flex-wrap gap-1.5 empty:hidden"></div>
+    <p class="desc-text text-[13px] text-ink-soft m-0 leading-relaxed"></p>
+    <a target="_blank" rel="noopener" class="wa-link mt-1 flex items-center justify-center gap-2 text-white no-underline font-extrabold text-[14px] py-3 rounded-full transition-transform"><svg class="icon" width="17" height="17" viewBox="0 0 32 32" fill="currentColor"><path d="M16.04 3C9.37 3 3.97 8.4 3.97 15.07c0 2.36.66 4.56 1.8 6.44L3 29l7.68-2.02a12.03 12.03 0 0 0 5.36 1.26h.01c6.67 0 12.07-5.4 12.07-12.07C28.12 8.5 22.71 3.1 16.04 3zm0 22.02h-.01a10.1 10.1 0 0 1-5.14-1.4l-.37-.22-3.83 1 1.02-3.73-.24-.38a9.98 9.98 0 0 1-1.53-5.32c0-5.53 4.5-10.03 10.05-10.03 2.69 0 5.21 1.05 7.1 2.95a9.94 9.94 0 0 1 2.95 7.1c0 5.53-4.5 10.03-10.02 10.03zm5.5-7.5c-.3-.15-1.78-.88-2.06-.98-.28-.1-.48-.15-.68.15-.2.3-.78.98-.96 1.18-.18.2-.35.22-.65.08-.3-.15-1.26-.46-2.4-1.47-.89-.79-1.48-1.77-1.66-2.07-.17-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.65-.94-2.26-.25-.6-.5-.5-.68-.5h-.58c-.2 0-.53.08-.8.38-.28.3-1.05 1.02-1.05 2.5s1.08 2.9 1.23 3.1c.15.2 2.13 3.24 5.16 4.55.72.31 1.28.5 1.72.64.72.23 1.38.2 1.9.12.58-.09 1.78-.73 2.03-1.43.25-.7.25-1.3.18-1.43-.07-.13-.27-.2-.57-.35z"/></svg> Contactar por WhatsApp</a>
+    <button type="button" class="report-link block mx-auto mt-0.5 bg-transparent border-0 text-ink-soft text-[11px] underline cursor-pointer p-0.5 hover:text-thread-dark">Reportar este aviso</button>
   </article>
 </template>
 
 <template id="mercCardTemplate">
   <article class="card">
-    <div class="card-photos"></div>
-    <div class="badge-row">
-      <span class="badge tipo-badge"></span>
-      <span class="badge badge-urgente urgente-badge">Urgente</span>
+    <div class="card-photos flex gap-1.5 overflow-x-auto empty:hidden"></div>
+    <div class="flex items-center justify-between gap-2">
+      <span class="badge tipo-badge text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full"></span>
+      <span class="badge badge-urgente urgente-badge text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full">Urgente</span>
     </div>
-    <div class="owner-actions hidden">
-      <button type="button" class="ghost-btn edit-btn"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg> Editar</button>
-      <button type="button" class="ghost-btn delete-btn"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg> Eliminar</button>
+    <div class="owner-actions hidden flex gap-1 justify-end">
+      <button type="button" class="ghost-btn edit-btn flex items-center gap-1 text-[12px] font-semibold bg-transparent border-0 text-ink-soft cursor-pointer px-1.5 py-1 rounded-lg hover:bg-stone-100 hover:text-thread-dark"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg> Editar</button>
+      <button type="button" class="ghost-btn delete-btn flex items-center gap-1 text-[12px] font-semibold bg-transparent border-0 text-ink-soft cursor-pointer px-1.5 py-1 rounded-lg hover:bg-stone-100 hover:text-red-600"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg> Eliminar</button>
     </div>
-    <h3 class="contacto-name"></h3>
-    <p class="zona-line"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg><span></span></p>
-    <p class="doc-line"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span></span></p>
-    <div class="cat-chips item-chips"></div>
-    <div class="cat-chips talla-chips"></div>
-    <div class="cat-chips color-chips"></div>
-    <div class="meta-lines"></div>
-    <div class="cat-chips modalidad-venta-chips"></div>
-    <p class="desc-text"></p>
-    <a target="_blank" rel="noopener" class="wa-link"><svg class="icon" width="17" height="17" viewBox="0 0 32 32" fill="currentColor"><path d="M16.04 3C9.37 3 3.97 8.4 3.97 15.07c0 2.36.66 4.56 1.8 6.44L3 29l7.68-2.02a12.03 12.03 0 0 0 5.36 1.26h.01c6.67 0 12.07-5.4 12.07-12.07C28.12 8.5 22.71 3.1 16.04 3zm0 22.02h-.01a10.1 10.1 0 0 1-5.14-1.4l-.37-.22-3.83 1 1.02-3.73-.24-.38a9.98 9.98 0 0 1-1.53-5.32c0-5.53 4.5-10.03 10.05-10.03 2.69 0 5.21 1.05 7.1 2.95a9.94 9.94 0 0 1 2.95 7.1c0 5.53-4.5 10.03-10.02 10.03zm5.5-7.5c-.3-.15-1.78-.88-2.06-.98-.28-.1-.48-.15-.68.15-.2.3-.78.98-.96 1.18-.18.2-.35.22-.65.08-.3-.15-1.26-.46-2.4-1.47-.89-.79-1.48-1.77-1.66-2.07-.17-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.65-.94-2.26-.25-.6-.5-.5-.68-.5h-.58c-.2 0-.53.08-.8.38-.28.3-1.05 1.02-1.05 2.5s1.08 2.9 1.23 3.1c.15.2 2.13 3.24 5.16 4.55.72.31 1.28.5 1.72.64.72.23 1.38.2 1.9.12.58-.09 1.78-.73 2.03-1.43.25-.7.25-1.3.18-1.43-.07-.13-.27-.2-.57-.35z"/></svg> Contactar por WhatsApp</a>
-    <button type="button" class="report-link">Reportar este aviso</button>
+    <h3 class="contacto-name text-[16px] font-semibold m-0 leading-tight"></h3>
+    <p class="zona-line flex items-center gap-1.5 text-[13px] text-ink-soft m-0"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg><span></span></p>
+    <p class="doc-line flex items-center gap-1 text-[12px] font-bold text-ofrezco m-0"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span></span></p>
+    <div class="item-chips flex flex-wrap gap-1.5 empty:hidden"></div>
+    <div class="talla-chips flex flex-wrap gap-1.5 empty:hidden"></div>
+    <div class="color-chips flex flex-wrap gap-1.5 empty:hidden"></div>
+    <div class="meta-lines flex flex-col gap-0.5"></div>
+    <div class="modalidad-venta-chips flex flex-wrap gap-1.5 empty:hidden"></div>
+    <p class="desc-text text-[13px] text-ink-soft m-0 leading-relaxed"></p>
+    <a target="_blank" rel="noopener" class="wa-link mt-1 flex items-center justify-center gap-2 text-white no-underline font-extrabold text-[14px] py-3 rounded-full transition-transform"><svg class="icon" width="17" height="17" viewBox="0 0 32 32" fill="currentColor"><path d="M16.04 3C9.37 3 3.97 8.4 3.97 15.07c0 2.36.66 4.56 1.8 6.44L3 29l7.68-2.02a12.03 12.03 0 0 0 5.36 1.26h.01c6.67 0 12.07-5.4 12.07-12.07C28.12 8.5 22.71 3.1 16.04 3zm0 22.02h-.01a10.1 10.1 0 0 1-5.14-1.4l-.37-.22-3.83 1 1.02-3.73-.24-.38a9.98 9.98 0 0 1-1.53-5.32c0-5.53 4.5-10.03 10.05-10.03 2.69 0 5.21 1.05 7.1 2.95a9.94 9.94 0 0 1 2.95 7.1c0 5.53-4.5 10.03-10.02 10.03zm5.5-7.5c-.3-.15-1.78-.88-2.06-.98-.28-.1-.48-.15-.68.15-.2.3-.78.98-.96 1.18-.18.2-.35.22-.65.08-.3-.15-1.26-.46-2.4-1.47-.89-.79-1.48-1.77-1.66-2.07-.17-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.65-.94-2.26-.25-.6-.5-.5-.68-.5h-.58c-.2 0-.53.08-.8.38-.28.3-1.05 1.02-1.05 2.5s1.08 2.9 1.23 3.1c.15.2 2.13 3.24 5.16 4.55.72.31 1.28.5 1.72.64.72.23 1.38.2 1.9.12.58-.09 1.78-.73 2.03-1.43.25-.7.25-1.3.18-1.43-.07-.13-.27-.2-.57-.35z"/></svg> Contactar por WhatsApp</a>
+    <button type="button" class="report-link block mx-auto mt-0.5 bg-transparent border-0 text-ink-soft text-[11px] underline cursor-pointer p-0.5 hover:text-thread-dark">Reportar este aviso</button>
   </article>
 </template>
 
-<template id="metaLineTemplate"><p class="meta-line"><span></span></p></template>
+<template id="metaLineTemplate"><p class="meta-line text-[13px] text-ink-soft m-0"><span></span></p></template>
 
 <script src="app.js"></script>
 </body>
