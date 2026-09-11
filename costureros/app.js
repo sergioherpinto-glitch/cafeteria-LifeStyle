@@ -1,7 +1,8 @@
 // Directorio de costureros y talleres — datos guardados en localStorage (demo local).
-// Cada aviso: ver SEED_DATA más abajo para la forma completa del objeto.
+// Dos secciones independientes: Empleos (avisos de trabajo) y Mercadería (compra/venta).
 
 const STORAGE_KEY = 'costureros_listings_v2';
+const MERC_STORAGE_KEY = 'costureros_mercaderia_v1';
 const MINE_KEY = 'costureros_mine_v2';
 
 const PERFILES = ['Operario(a) de máquina', 'Manual de costura', 'Cortador(a)', 'Vendedor(a)'];
@@ -40,6 +41,14 @@ const ZONAS = [
   'Santa Anita', 'Ate', 'La Molina', 'San Luis', 'Vitarte',
   'El Agustino', 'San Juan de Lurigancho', 'Chosica', 'Cercado de Lima', 'Gamarra', 'Otro'
 ];
+
+const MERC_ITEMS = [
+  'Polos/Camisetas', 'Camisas', 'Pantalones/Jeans', 'Ropa deportiva',
+  'Ropa interior/Lencería', 'Uniformes', 'Chompas/Tejido', 'Casacas',
+  'Telas (por rollo)', 'Insumos/Accesorios de costura', 'Otra'
+];
+
+const VENTA_TIPO = ['Por mayor', 'Por menor', 'Mayor y menor'];
 
 const SEED_DATA = [
   {
@@ -114,26 +123,46 @@ const SEED_DATA = [
   },
 ];
 
-let listings = loadListings();
+const MERC_SEED_DATA = [
+  {
+    tipo: 'vendo', items: ['Chompas/Tejido'], cantidad: '200 unidades', ventaTipo: 'Mayor y menor',
+    precio: 'S/25 por unidad al por mayor', zona: 'Gamarra', contacto: 'Manuel R.', whatsapp: '911000001',
+    descripcion: 'Chompas de tejido grueso, tallas S a XL, varios colores. Mando fotos y video por WhatsApp.',
+    urgente: false, fecha: Date.now() - 1000 * 60 * 60 * 10,
+  },
+  {
+    tipo: 'compro', items: ['Ropa deportiva'], cantidad: '1000 unidades', ventaTipo: 'Por mayor',
+    precio: '', zona: 'Cercado de Lima', contacto: 'Distribuidora Andina', whatsapp: '922000002',
+    descripcion: 'Mayorista busca proveedor constante de ropa deportiva.', urgente: false,
+    fecha: Date.now() - 1000 * 60 * 60 * 15,
+  },
+];
+
+let listings = loadFrom(STORAGE_KEY, SEED_DATA, 'l');
+let mercListings = loadFrom(MERC_STORAGE_KEY, MERC_SEED_DATA, 'm');
 let mineIds = loadMineIds();
 let activeTipo = '';
+let activeMercTipo = '';
 let editingId = null;
+let mercEditingId = null;
+let currentView = 'empleos';
 
-function loadListings() {
+function loadFrom(key, seed, prefix) {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(key);
     if (raw) return JSON.parse(raw);
   } catch (e) { /* localStorage no disponible */ }
-  saveListings(SEED_DATA.map((d, i) => ({ id: 'seed-' + i, ...d })));
-  return loadListingsRaw();
-}
-
-function loadListingsRaw() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch (e) { return []; }
+  const withIds = seed.map((d, i) => ({ id: `${prefix}-seed-${i}`, ...d }));
+  try { localStorage.setItem(key, JSON.stringify(withIds)); } catch (e) { /* ignore */ }
+  return withIds;
 }
 
 function saveListings(data) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) { /* ignore */ }
+}
+
+function saveMercListings(data) {
+  try { localStorage.setItem(MERC_STORAGE_KEY, JSON.stringify(data)); } catch (e) { /* ignore */ }
 }
 
 function loadMineIds() {
@@ -161,8 +190,89 @@ function timeAgo(ts) {
   return `hace ${Math.round(diffH / 24)} d`;
 }
 
-// Etiquetas cortas que identifican la especialidad de un aviso, en el orden
-// que de verdad se usa para evaluar a alguien: máquina/labor antes que prenda.
+// ---------- Utilidades genéricas de chips ("otra" con texto libre) ----------
+
+function buildChipGroup(containerId, values) {
+  const wrap = document.getElementById(containerId);
+  values.forEach(v => {
+    const label = document.createElement('label');
+    label.className = 'cat-toggle';
+    label.innerHTML = `<input type="checkbox" value="${v}"><span>${v}</span>`;
+    wrap.appendChild(label);
+  });
+}
+
+function checkedValues(containerId) {
+  return Array.from(document.querySelectorAll(`#${containerId} input:checked`)).map(i => i.value);
+}
+
+function resolveChipValues(containerId, otroInputId) {
+  const checked = checkedValues(containerId);
+  if (!checked.includes('Otra')) return checked;
+  const custom = document.getElementById(otroInputId).value.trim();
+  if (!custom) return checked;
+  const withoutOtra = checked.filter(v => v !== 'Otra');
+  const customValues = custom.split(',').map(s => s.trim()).filter(Boolean);
+  return [...withoutOtra, ...customValues];
+}
+
+function populateChipGroup(containerId, canonicalList, storedValues, otroInputId, otroFieldId) {
+  const canonicalSet = new Set(canonicalList);
+  const leftovers = storedValues.filter(v => !canonicalSet.has(v));
+  const hasOtra = leftovers.length > 0;
+  document.querySelectorAll(`#${containerId} input`).forEach(cb => {
+    cb.checked = storedValues.includes(cb.value) || (cb.value === 'Otra' && hasOtra);
+  });
+  document.getElementById(otroInputId).value = leftovers.join(', ');
+  document.getElementById(otroFieldId).classList.toggle('hidden', !hasOtra);
+}
+
+function wireOtroToggle(containerId, otroFieldId) {
+  const otraCheckbox = document.querySelector(`#${containerId} input[value="Otra"]`);
+  if (!otraCheckbox) return;
+  otraCheckbox.addEventListener('change', () => {
+    document.getElementById(otroFieldId).classList.toggle('hidden', !otraCheckbox.checked);
+  });
+}
+
+function hideOtroFieldsIn(rootId) {
+  document.querySelectorAll(`#${rootId} .otro-field`).forEach(f => f.classList.add('hidden'));
+}
+
+// ---------- Utilidad genérica de "Zona: Otro" con texto libre ----------
+
+function wireZonaOtro(selectId, otroFieldId) {
+  document.getElementById(selectId).addEventListener('change', () => updateZonaOtroVisibility(selectId, otroFieldId));
+}
+
+function updateZonaOtroVisibility(selectId, otroFieldId) {
+  document.getElementById(otroFieldId).classList.toggle('hidden', document.getElementById(selectId).value !== 'Otro');
+}
+
+function resolveZona(selectId, otroId) {
+  const val = document.getElementById(selectId).value;
+  if (val !== 'Otro') return val;
+  return document.getElementById(otroId).value.trim() || 'Otro';
+}
+
+function appendChips(container, values, className) {
+  values.forEach(v => {
+    const chip = document.createElement('span');
+    chip.className = className;
+    chip.textContent = v;
+    container.appendChild(chip);
+  });
+}
+
+function appendMetaLine(container, template, text) {
+  if (!text) return;
+  const node = template.content.cloneNode(true);
+  node.querySelector('span').textContent = text;
+  container.appendChild(node);
+}
+
+// ================= EMPLEOS =================
+
 function skillTags(listing) {
   if (listing.maquinas.length || listing.operaciones.length) {
     return [...listing.maquinas, ...listing.operaciones];
@@ -206,22 +316,6 @@ function matchesFilters(listing) {
     if (!haystack.includes(q)) return false;
   }
   return true;
-}
-
-function appendChips(container, values, className) {
-  values.forEach(v => {
-    const chip = document.createElement('span');
-    chip.className = className;
-    chip.textContent = v;
-    container.appendChild(chip);
-  });
-}
-
-function appendMetaLine(container, template, text) {
-  if (!text) return;
-  const node = template.content.cloneNode(true);
-  node.querySelector('span').textContent = text;
-  container.appendChild(node);
 }
 
 function render() {
@@ -285,55 +379,6 @@ function render() {
   });
 }
 
-function buildChipGroup(containerId, values) {
-  const wrap = document.getElementById(containerId);
-  values.forEach(v => {
-    const label = document.createElement('label');
-    label.className = 'cat-toggle';
-    label.innerHTML = `<input type="checkbox" value="${v}"><span>${v}</span>`;
-    wrap.appendChild(label);
-  });
-}
-
-function checkedValues(containerId) {
-  return Array.from(document.querySelectorAll(`#${containerId} input:checked`)).map(i => i.value);
-}
-
-// Convierte los checkboxes marcados en valores finales: si "Otra" está
-// marcada, la reemplaza por lo que la persona escribió en el campo de texto.
-function resolveChipValues(containerId, otroInputId) {
-  const checked = checkedValues(containerId);
-  if (!checked.includes('Otra')) return checked;
-  const custom = document.getElementById(otroInputId).value.trim();
-  const withoutOtra = checked.filter(v => v !== 'Otra');
-  if (!custom) return checked;
-  const customValues = custom.split(',').map(s => s.trim()).filter(Boolean);
-  return [...withoutOtra, ...customValues];
-}
-
-function populateChipGroup(containerId, canonicalList, storedValues, otroInputId, otroFieldId) {
-  const canonicalSet = new Set(canonicalList);
-  const leftovers = storedValues.filter(v => !canonicalSet.has(v));
-  const hasOtra = leftovers.length > 0;
-  document.querySelectorAll(`#${containerId} input`).forEach(cb => {
-    cb.checked = storedValues.includes(cb.value) || (cb.value === 'Otra' && hasOtra);
-  });
-  document.getElementById(otroInputId).value = leftovers.join(', ');
-  document.getElementById(otroFieldId).classList.toggle('hidden', !hasOtra);
-}
-
-function wireOtroToggle(containerId, otroFieldId) {
-  const otraCheckbox = document.querySelector(`#${containerId} input[value="Otra"]`);
-  if (!otraCheckbox) return;
-  otraCheckbox.addEventListener('change', () => {
-    document.getElementById(otroFieldId).classList.toggle('hidden', !otraCheckbox.checked);
-  });
-}
-
-function hideAllOtroFields() {
-  document.querySelectorAll('.otro-field').forEach(f => f.classList.add('hidden'));
-}
-
 function updatePerfilSections() {
   const perfiles = checkedValues('perfilChips');
   document.getElementById('maquinaSection').classList.toggle('hidden', !perfiles.includes('Operario(a) de máquina'));
@@ -345,10 +390,6 @@ function updateTallerSection() {
   document.getElementById('tallerSection').classList.toggle('hidden', !esOfrezco);
 }
 
-function updateZonaOtro() {
-  document.getElementById('zonaOtroField').classList.toggle('hidden', document.getElementById('formZona').value !== 'Otro');
-}
-
 function openModal() { document.getElementById('modal').classList.add('open'); }
 function closeModal() { document.getElementById('modal').classList.remove('open'); }
 
@@ -356,10 +397,10 @@ function openModalForCreate() {
   editingId = null;
   const form = document.getElementById('publishForm');
   form.reset();
-  hideAllOtroFields();
+  hideOtroFieldsIn('publishForm');
   updatePerfilSections();
   updateTallerSection();
-  updateZonaOtro();
+  updateZonaOtroVisibility('formZona', 'zonaOtroField');
   document.getElementById('modalTitle').textContent = 'Publicar aviso';
   document.getElementById('submitBtn').textContent = 'Publicar aviso';
   openModal();
@@ -371,7 +412,6 @@ function openModalForEdit(listing) {
   form.reset();
 
   document.querySelector(`input[name="tipo"][value="${listing.tipo}"]`).checked = true;
-
   document.querySelectorAll('#perfilChips input').forEach(cb => { cb.checked = listing.perfiles.includes(cb.value); });
 
   populateChipGroup('prendaChips', PRENDAS, listing.prendas, 'prendaOtro', 'prendaOtroField');
@@ -391,7 +431,7 @@ function openModalForEdit(listing) {
   }
   document.getElementById('formModalidadPago').value = listing.modalidadPago || '';
   document.getElementById('formPago').value = listing.pago || '';
-  Array.from(document.querySelectorAll('#disponibilidadChips input')).forEach(cb => {
+  document.querySelectorAll('#disponibilidadChips input').forEach(cb => {
     cb.checked = listing.disponibilidad.includes(cb.value);
   });
   document.getElementById('formContacto').value = listing.contacto;
@@ -401,7 +441,7 @@ function openModalForEdit(listing) {
 
   updatePerfilSections();
   updateTallerSection();
-  updateZonaOtro();
+  updateZonaOtroVisibility('formZona', 'zonaOtroField');
   document.getElementById('modalTitle').textContent = 'Editar aviso';
   document.getElementById('submitBtn').textContent = 'Guardar cambios';
   openModal();
@@ -416,8 +456,7 @@ function deleteListing(id) {
   render();
 }
 
-function initFormListeners() {
-  document.getElementById('fab').addEventListener('click', openModalForCreate);
+function initEmpleosForm() {
   document.getElementById('closeModal').addEventListener('click', closeModal);
   document.getElementById('modal').addEventListener('click', (e) => {
     if (e.target.id === 'modal') closeModal();
@@ -425,7 +464,7 @@ function initFormListeners() {
 
   document.querySelectorAll('#perfilChips input').forEach(i => i.addEventListener('change', updatePerfilSections));
   document.querySelectorAll('input[name="tipo"]').forEach(i => i.addEventListener('change', updateTallerSection));
-  document.getElementById('formZona').addEventListener('change', updateZonaOtro);
+  wireZonaOtro('formZona', 'zonaOtroField');
 
   wireOtroToggle('prendaChips', 'prendaOtroField');
   wireOtroToggle('telaChips', 'telaOtroField');
@@ -453,8 +492,6 @@ function initFormListeners() {
 
     const tipo = document.querySelector('input[name="tipo"]:checked').value;
     const perfiles = checkedValues('perfilChips');
-    const zonaSelect = document.getElementById('formZona').value;
-    const zona = zonaSelect === 'Otro' ? (document.getElementById('zonaOtro').value.trim() || 'Otro') : zonaSelect;
 
     const data = {
       tipo,
@@ -469,7 +506,7 @@ function initFormListeners() {
       modalidadPago: document.getElementById('formModalidadPago').value,
       pago: document.getElementById('formPago').value.trim(),
       disponibilidad: checkedValues('disponibilidadChips'),
-      zona,
+      zona: resolveZona('formZona', 'zonaOtro'),
       contacto: document.getElementById('formContacto').value.trim(),
       whatsapp: whatsappDigits,
       descripcion: document.getElementById('formDescripcion').value.trim(),
@@ -492,19 +529,249 @@ function initFormListeners() {
   });
 }
 
-function initFilterListeners() {
+function initEmpleosFilters() {
   document.getElementById('searchInput').addEventListener('input', render);
   document.getElementById('filterPerfil').addEventListener('change', render);
   document.getElementById('filterZona').addEventListener('change', render);
   document.getElementById('filterUrgente').addEventListener('change', render);
 
-  document.querySelectorAll('.tipo-tab').forEach(btn => {
+  document.querySelectorAll('#empleosView .tipo-tab').forEach(btn => {
     btn.addEventListener('click', () => {
       activeTipo = btn.dataset.tipo;
-      document.querySelectorAll('.tipo-tab').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      document.querySelectorAll('#empleosView .tipo-tab').forEach(b => b.setAttribute('aria-pressed', 'false'));
       btn.setAttribute('aria-pressed', 'true');
       render();
     });
+  });
+}
+
+// ================= MERCADERÍA =================
+
+function mercWaMessage(listing) {
+  const item = listing.items.slice(0, 2).join(', ') || 'la mercadería';
+  if (listing.tipo === 'vendo') {
+    return `Hola, vi que tienes ${item} disponible en ${listing.zona}. Me interesa, ¿cuál es el precio?`;
+  }
+  return `Hola ${listing.contacto}, vi que buscas comprar ${item}. Tengo disponible, ¿te interesa?`;
+}
+
+function mercWaLink(listing) {
+  const digits = (listing.whatsapp || '').replace(/\D/g, '');
+  return `https://wa.me/51${digits}?text=${encodeURIComponent(mercWaMessage(listing))}`;
+}
+
+function matchesMercFilters(listing) {
+  const q = document.getElementById('mercSearchInput').value.trim().toLowerCase();
+  const item = document.getElementById('mercFilterItem').value;
+  const zona = document.getElementById('mercFilterZona').value;
+  const soloUrgente = document.getElementById('mercFilterUrgente').checked;
+
+  if (activeMercTipo && listing.tipo !== activeMercTipo) return false;
+  if (item && !listing.items.includes(item)) return false;
+  if (zona && listing.zona !== zona) return false;
+  if (soloUrgente && !listing.urgente) return false;
+  if (q) {
+    const haystack = [
+      listing.contacto, listing.descripcion, listing.zona, listing.cantidad,
+      listing.ventaTipo, listing.precio, ...listing.items,
+    ].join(' ').toLowerCase();
+    if (!haystack.includes(q)) return false;
+  }
+  return true;
+}
+
+function mercRender() {
+  const grid = document.getElementById('mercGrid');
+  const empty = document.getElementById('mercEmptyState');
+  const tpl = document.getElementById('mercCardTemplate');
+  const metaTpl = document.getElementById('metaLineTemplate');
+  grid.innerHTML = '';
+
+  const filtered = mercListings
+    .filter(matchesMercFilters)
+    .sort((a, b) => (b.urgente - a.urgente) || (b.fecha - a.fecha));
+
+  document.getElementById('mercResultCount').textContent =
+    `${filtered.length} publicación${filtered.length === 1 ? '' : 'es'} encontrada${filtered.length === 1 ? '' : 's'}`;
+
+  empty.classList.toggle('visible', filtered.length === 0);
+
+  filtered.forEach(listing => {
+    const node = tpl.content.cloneNode(true);
+    const article = node.querySelector('.card');
+    article.dataset.id = listing.id;
+
+    node.querySelector('.owner-actions').classList.toggle('hidden', !mineIds.includes(listing.id));
+
+    const tipoBadge = node.querySelector('.tipo-badge');
+    tipoBadge.textContent = listing.tipo === 'vendo' ? 'Vendo' : 'Busco comprar';
+    tipoBadge.classList.add(listing.tipo === 'vendo' ? 'badge-ofrezco' : 'badge-busca');
+
+    node.querySelector('.urgente-badge').classList.toggle('hidden', !listing.urgente);
+    node.querySelector('.contacto-name').textContent = listing.contacto;
+    node.querySelector('.zona-line span').textContent = `${listing.zona} · ${timeAgo(listing.fecha)}`;
+
+    appendChips(node.querySelector('.item-chips'), listing.items, 'chip');
+
+    const metaLines = node.querySelector('.meta-lines');
+    const cantidadVenta = [
+      listing.cantidad ? `Cantidad: ${listing.cantidad}` : '',
+      listing.ventaTipo ? `Venta: ${listing.ventaTipo}` : '',
+    ].filter(Boolean).join(' · ');
+    appendMetaLine(metaLines, metaTpl, cantidadVenta);
+    appendMetaLine(metaLines, metaTpl, listing.precio ? `Precio: ${listing.precio}` : '');
+
+    const descEl = node.querySelector('.desc-text');
+    if (listing.descripcion) { descEl.textContent = listing.descripcion; } else { descEl.remove(); }
+
+    node.querySelector('.wa-link').href = mercWaLink(listing);
+
+    grid.appendChild(node);
+  });
+}
+
+function openMercModal() { document.getElementById('mercModal').classList.add('open'); }
+function closeMercModal() { document.getElementById('mercModal').classList.remove('open'); }
+
+function openMercModalForCreate() {
+  mercEditingId = null;
+  const form = document.getElementById('mercForm');
+  form.reset();
+  hideOtroFieldsIn('mercForm');
+  updateZonaOtroVisibility('mercZona', 'mercZonaOtroField');
+  document.getElementById('mercModalTitle').textContent = 'Publicar mercadería';
+  document.getElementById('mercSubmitBtn').textContent = 'Publicar';
+  openMercModal();
+}
+
+function openMercModalForEdit(listing) {
+  mercEditingId = listing.id;
+  const form = document.getElementById('mercForm');
+  form.reset();
+
+  document.querySelector(`input[name="mercTipo"][value="${listing.tipo}"]`).checked = true;
+  populateChipGroup('mercItemChips', MERC_ITEMS, listing.items, 'mercItemOtro', 'mercItemOtroField');
+  document.getElementById('mercCantidad').value = listing.cantidad || '';
+  document.getElementById('mercVentaTipo').value = listing.ventaTipo || '';
+  document.getElementById('mercPrecio').value = listing.precio || '';
+
+  if (ZONAS.includes(listing.zona)) {
+    document.getElementById('mercZona').value = listing.zona;
+    document.getElementById('mercZonaOtro').value = '';
+  } else {
+    document.getElementById('mercZona').value = 'Otro';
+    document.getElementById('mercZonaOtro').value = listing.zona;
+  }
+  document.getElementById('mercContacto').value = listing.contacto;
+  document.getElementById('mercWhatsapp').value = listing.whatsapp;
+  document.getElementById('mercDescripcion').value = listing.descripcion || '';
+  document.getElementById('mercUrgente').checked = listing.urgente;
+
+  updateZonaOtroVisibility('mercZona', 'mercZonaOtroField');
+  document.getElementById('mercModalTitle').textContent = 'Editar publicación';
+  document.getElementById('mercSubmitBtn').textContent = 'Guardar cambios';
+  openMercModal();
+}
+
+function deleteMercListing(id) {
+  if (!confirm('¿Seguro que quieres eliminar esta publicación?')) return;
+  mercListings = mercListings.filter(l => l.id !== id);
+  mineIds = mineIds.filter(i => i !== id);
+  saveMercListings(mercListings);
+  saveMineIds();
+  mercRender();
+}
+
+function initMercForm() {
+  document.getElementById('mercCloseModal').addEventListener('click', closeMercModal);
+  document.getElementById('mercModal').addEventListener('click', (e) => {
+    if (e.target.id === 'mercModal') closeMercModal();
+  });
+
+  wireZonaOtro('mercZona', 'mercZonaOtroField');
+  wireOtroToggle('mercItemChips', 'mercItemOtroField');
+
+  document.getElementById('mercGrid').addEventListener('click', (e) => {
+    const card = e.target.closest('.card');
+    if (!card) return;
+    const id = card.dataset.id;
+    if (e.target.closest('.edit-btn')) {
+      const listing = mercListings.find(l => l.id === id);
+      if (listing) openMercModalForEdit(listing);
+    } else if (e.target.closest('.delete-btn')) {
+      deleteMercListing(id);
+    }
+  });
+
+  document.getElementById('mercForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const whatsappDigits = document.getElementById('mercWhatsapp').value.replace(/\D/g, '');
+    if (whatsappDigits.length !== 9) { alert('Ingresa un número de WhatsApp válido de 9 dígitos.'); return; }
+
+    const data = {
+      tipo: document.querySelector('input[name="mercTipo"]:checked').value,
+      items: resolveChipValues('mercItemChips', 'mercItemOtro'),
+      cantidad: document.getElementById('mercCantidad').value.trim(),
+      ventaTipo: document.getElementById('mercVentaTipo').value,
+      precio: document.getElementById('mercPrecio').value.trim(),
+      zona: resolveZona('mercZona', 'mercZonaOtro'),
+      contacto: document.getElementById('mercContacto').value.trim(),
+      whatsapp: whatsappDigits,
+      descripcion: document.getElementById('mercDescripcion').value.trim(),
+      urgente: document.getElementById('mercUrgente').checked,
+    };
+
+    if (mercEditingId) {
+      const idx = mercListings.findIndex(l => l.id === mercEditingId);
+      if (idx !== -1) mercListings[idx] = { ...mercListings[idx], ...data };
+    } else {
+      const id = 'm-' + Date.now();
+      mercListings.unshift({ id, ...data, fecha: Date.now() });
+      mineIds.push(id);
+      saveMineIds();
+    }
+
+    saveMercListings(mercListings);
+    closeMercModal();
+    mercRender();
+  });
+}
+
+function initMercFilters() {
+  document.getElementById('mercSearchInput').addEventListener('input', mercRender);
+  document.getElementById('mercFilterItem').addEventListener('change', mercRender);
+  document.getElementById('mercFilterZona').addEventListener('change', mercRender);
+  document.getElementById('mercFilterUrgente').addEventListener('change', mercRender);
+
+  document.querySelectorAll('#mercaderiaView .tipo-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeMercTipo = btn.dataset.tipo;
+      document.querySelectorAll('#mercaderiaView .tipo-tab').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
+      mercRender();
+    });
+  });
+}
+
+// ================= Navegación entre secciones + compartir =================
+
+function switchView(view) {
+  currentView = view;
+  document.getElementById('empleosView').classList.toggle('hidden', view !== 'empleos');
+  document.getElementById('mercaderiaView').classList.toggle('hidden', view !== 'mercaderia');
+  document.querySelectorAll('.mode-tab').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === view)));
+  document.getElementById('fab').setAttribute('aria-label', view === 'empleos' ? 'Publicar aviso' : 'Publicar mercadería');
+}
+
+function initNav() {
+  document.querySelectorAll('.mode-tab').forEach(btn => {
+    btn.addEventListener('click', () => switchView(btn.dataset.view));
+  });
+
+  document.getElementById('fab').addEventListener('click', () => {
+    if (currentView === 'empleos') openModalForCreate();
+    else openMercModalForCreate();
   });
 }
 
@@ -539,11 +806,23 @@ function init() {
 
   updatePerfilSections();
   updateTallerSection();
-  updateZonaOtro();
-  initFormListeners();
-  initFilterListeners();
+  updateZonaOtroVisibility('formZona', 'zonaOtroField');
+  initEmpleosForm();
+  initEmpleosFilters();
+  render();
+
+  fillSelect(document.getElementById('mercFilterItem'), MERC_ITEMS);
+  fillSelect(document.getElementById('mercFilterZona'), ZONAS);
+  fillSelect(document.getElementById('mercZona'), ZONAS);
+  fillSelect(document.getElementById('mercVentaTipo'), VENTA_TIPO);
+  buildChipGroup('mercItemChips', MERC_ITEMS);
+  updateZonaOtroVisibility('mercZona', 'mercZonaOtroField');
+  initMercForm();
+  initMercFilters();
+  mercRender();
+
+  initNav();
   initShare();
-  document.querySelector('.tipo-tab[data-tipo=""]').click();
 }
 
 document.addEventListener('DOMContentLoaded', init);
