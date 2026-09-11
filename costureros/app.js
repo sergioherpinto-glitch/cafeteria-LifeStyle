@@ -104,18 +104,17 @@ function render() {
   document.getElementById('resultCount').textContent =
     `${filtered.length} aviso${filtered.length === 1 ? '' : 's'} encontrado${filtered.length === 1 ? '' : 's'}`;
 
-  empty.classList.toggle('hidden', filtered.length !== 0);
+  empty.classList.toggle('visible', filtered.length === 0);
 
   filtered.forEach(listing => {
     const node = tpl.content.cloneNode(true);
     const tipoBadge = node.querySelector('.tipo-badge');
     tipoBadge.textContent = listing.tipo === 'ofrezco' ? 'Busca personal' : 'Busca trabajo';
-    tipoBadge.style.background = listing.tipo === 'ofrezco' ? '#e6f4ea' : '#e8eefc';
-    tipoBadge.style.color = listing.tipo === 'ofrezco' ? '#1e7d3c' : '#2b4fc9';
+    tipoBadge.classList.add(listing.tipo === 'ofrezco' ? 'badge-ofrezco' : 'badge-busca');
 
     node.querySelector('.urgente-badge').classList.toggle('hidden', !listing.urgente);
     node.querySelector('.contacto-name').textContent = listing.contacto;
-    node.querySelector('.zona-text span').textContent = `${listing.zona} · ${timeAgo(listing.fecha)}`;
+    node.querySelector('.zona-line span').textContent = `${listing.zona} · ${timeAgo(listing.fecha)}`;
 
     const chipsWrap = node.querySelector('.cat-chips');
     listing.categorias.forEach(c => {
@@ -148,8 +147,8 @@ function buildCategoriaChips() {
   });
 }
 
-function openModal() { document.getElementById('modal').classList.remove('hidden'); }
-function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+function openModal() { document.getElementById('modal').classList.add('open'); }
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
 
 function initFormListeners() {
   document.getElementById('fab').addEventListener('click', openModal);
@@ -197,14 +196,8 @@ function initFilterListeners() {
   document.querySelectorAll('.tipo-tab').forEach(btn => {
     btn.addEventListener('click', () => {
       activeTipo = btn.dataset.tipo;
-      document.querySelectorAll('.tipo-tab').forEach(b => {
-        b.style.background = '';
-        b.style.color = '';
-        b.style.borderColor = 'var(--line)';
-      });
-      btn.style.background = 'var(--thread)';
-      btn.style.color = '#fff';
-      btn.style.borderColor = 'var(--thread)';
+      document.querySelectorAll('.tipo-tab').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
       render();
     });
   });
@@ -212,7 +205,7 @@ function initFilterListeners() {
 
 function initShare() {
   const btn = document.getElementById('shareBtn');
-  btn.classList.remove('hidden');
+  btn.style.display = 'inline-flex';
   btn.addEventListener('click', () => {
     const url = window.location.href;
     if (navigator.share) {
