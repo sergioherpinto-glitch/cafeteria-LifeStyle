@@ -5,8 +5,8 @@ const STORAGE_KEY = 'costureros_listings_v2';
 const MERC_STORAGE_KEY = 'costureros_mercaderia_v1';
 const MINE_KEY = 'costureros_mine_v2';
 
-// TODO: reemplazar por el WhatsApp real del administrador — ahí llegan los reportes.
-const ADMIN_WHATSAPP = '900000000';
+const ADMIN_WHATSAPP = '936780260';
+const YAPE_NUMBER = '962667762';
 
 const PERFILES = ['Operario(a) de máquina', 'Manual de costura', 'Cortador(a)', 'Vendedor(a)'];
 
@@ -618,6 +618,12 @@ function reportListing(sectionLabel, listing) {
   window.open(`https://wa.me/51${ADMIN_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
+function confirmYapePayment(contactoInputId) {
+  const contacto = document.getElementById(contactoInputId).value.trim();
+  const msg = `Hola, ya yapeé a ${YAPE_NUMBER} para destacar/mantener mi aviso${contacto ? ` ("${contacto}")` : ''}. Adjunto la captura del pago.`;
+  window.open(`https://wa.me/51${ADMIN_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
 function deleteListing(id) {
   if (!confirm('¿Seguro que quieres eliminar este aviso?')) return;
   listings = listings.filter(l => l.id !== id);
@@ -645,6 +651,11 @@ function initEmpleosForm() {
   wireOtroToggle('zonaTrabajoChips', 'zonaTrabajoOtroField');
 
   formPhotoPicker = makePhotoPicker('formFoto', 'formFotoPreviewList', 'formFotoLabel', 'formFotoConfirmWrap');
+
+  document.querySelector('#publishForm .yape-confirm-link').addEventListener('click', (e) => {
+    e.preventDefault();
+    confirmYapePayment('formContacto');
+  });
 
   document.getElementById('grid').addEventListener('click', (e) => {
     const card = e.target.closest('.card');
@@ -922,6 +933,11 @@ function initMercForm() {
   wireOtroToggle('mercModalidadVentaChips', 'mercModalidadVentaOtroField');
 
   mercPhotoPicker = makePhotoPicker('mercFoto', 'mercFotoPreviewList', 'mercFotoLabel', 'mercFotoConfirmWrap');
+
+  document.querySelector('#mercForm .yape-confirm-link').addEventListener('click', (e) => {
+    e.preventDefault();
+    confirmYapePayment('mercContacto');
+  });
 
   document.getElementById('mercGrid').addEventListener('click', (e) => {
     const card = e.target.closest('.card');
