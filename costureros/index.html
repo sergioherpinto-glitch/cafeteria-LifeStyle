@@ -99,7 +99,9 @@
   @media (min-width:900px){ #grid{ grid-template-columns:1fr 1fr 1fr; } }
 
   .card{ background:var(--surface); border:1px solid var(--line); border-radius:1rem; padding:1.05rem; display:flex; flex-direction:column; gap:.5rem; transition:transform .15s ease, box-shadow .15s ease; overflow:hidden; }
-  .card-photo{ width:calc(100% + 2.1rem); margin:-1.05rem -1.05rem .2rem; display:block; object-fit:cover; aspect-ratio:16/10; background:var(--surface-2); }
+  .card-photos{ display:flex; gap:.4rem; overflow-x:auto; }
+  .card-photos:empty{ display:none; }
+  .card-photos img{ width:5.5rem; height:5.5rem; object-fit:cover; border-radius:.7rem; flex:none; background:var(--surface-2); }
   .card:hover{ transform:translateY(-2px); box-shadow:var(--shadow); }
   @media (prefers-reduced-motion:reduce){ .card{ transition:none; } .card:hover{ transform:none; } }
 
@@ -158,8 +160,11 @@
   .hidden-file-input{ position:absolute; opacity:0; width:1px; height:1px; overflow:hidden; }
   .foto-picker-btn{ display:inline-flex; align-items:center; gap:.4rem; padding:.55rem .9rem; border:1px solid var(--line); border-radius:.6rem; background:var(--surface); font-size:.85rem; font-weight:600; cursor:pointer; }
   .foto-picker-btn:hover{ border-color:var(--thread); color:var(--thread); }
-  .foto-preview{ margin-top:.6rem; display:flex; align-items:center; gap:.6rem; }
-  .foto-preview img{ width:4rem; height:4rem; object-fit:cover; border-radius:.6rem; border:1px solid var(--line); }
+  .foto-preview-list{ margin-top:.6rem; display:flex; flex-wrap:wrap; gap:.6rem; }
+  .foto-preview-list:empty{ margin-top:0; }
+  .foto-thumb{ position:relative; width:4.2rem; height:4.2rem; }
+  .foto-thumb img{ width:100%; height:100%; object-fit:cover; border-radius:.6rem; border:1px solid var(--line); display:block; }
+  .foto-thumb-remove{ position:absolute; top:-.4rem; right:-.4rem; width:1.3rem; height:1.3rem; border-radius:50%; background:var(--ink); color:var(--bg); border:none; font-size:.8rem; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; }
   .field label{ display:block; font-size:.85rem; font-weight:600; margin-bottom:.4rem; }
   .field .hint{ font-size:.72rem; color:var(--ink-soft); margin:.35rem 0 0; }
   .field-grid{ display:grid; grid-template-columns:1fr 1fr; gap:.7rem; }
@@ -273,6 +278,16 @@
         <label><input type="radio" name="tipo" value="ofrezco" checked><span>Necesito personal (taller)</span></label>
         <label><input type="radio" name="tipo" value="busco"><span>Busco trabajo (costurero/a)</span></label>
       </div>
+    </div>
+
+    <div class="field">
+      <label for="formFoto">Fotos (hasta 3, opcional)</label>
+      <div class="foto-picker">
+        <input id="formFoto" type="file" accept="image/*" multiple class="hidden-file-input">
+        <label for="formFoto" id="formFotoLabel" class="foto-picker-btn"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Agregar foto</label>
+        <div id="formFotoPreviewList" class="foto-preview-list"></div>
+      </div>
+      <p class="hint">El taller puede mostrar fotos del taller o del trabajo; el costurero/a puede mostrar su propio trabajo. Se comprimen automáticamente.</p>
     </div>
 
     <p class="section-title">El trabajo</p>
@@ -410,16 +425,13 @@
     </div>
 
     <div class="field">
-      <label for="mercFoto">Foto de referencia (opcional)</label>
+      <label for="mercFoto">Fotos (hasta 3, opcional)</label>
       <div class="foto-picker">
-        <input id="mercFoto" type="file" accept="image/*" class="hidden-file-input">
-        <label for="mercFoto" id="mercFotoLabel" class="foto-picker-btn"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Elegir foto</label>
-        <div id="mercFotoPreview" class="foto-preview hidden">
-          <img id="mercFotoPreviewImg" alt="Vista previa">
-          <button type="button" id="mercFotoRemove" class="ghost-btn">Quitar</button>
-        </div>
+        <input id="mercFoto" type="file" accept="image/*" multiple class="hidden-file-input">
+        <label for="mercFoto" id="mercFotoLabel" class="foto-picker-btn"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Agregar foto</label>
+        <div id="mercFotoPreviewList" class="foto-preview-list"></div>
       </div>
-      <p class="hint">Una sola foto, se comprime automáticamente. Se guarda en este navegador — cuando conectemos la nube se va a ver igual en todos los dispositivos.</p>
+      <p class="hint">Se comprimen automáticamente. Los videos no caben aquí — un solo video pesa más que todo el espacio disponible en este navegador; se comparten directo por WhatsApp una vez que te escriban.</p>
     </div>
 
     <div class="field">
@@ -453,8 +465,18 @@
       </div>
       <div>
         <label for="mercVentaTipo">Venta</label>
-        <select id="mercVentaTipo"><option value="">No especificar</option></select>
+        <select id="mercVentaTipo" required><option value="">Selecciona...</option></select>
       </div>
+    </div>
+
+    <div id="precioMayorField" class="field hidden">
+      <label for="mercPrecioMayor">Precio por mayor</label>
+      <input id="mercPrecioMayor" type="text" placeholder="S/15 por unidad">
+    </div>
+
+    <div id="precioMenorField" class="field hidden">
+      <label for="mercPrecioMenor">Precio por menor</label>
+      <input id="mercPrecioMenor" type="text" placeholder="S/25 por unidad">
     </div>
 
     <div class="field">
@@ -463,11 +485,6 @@
       <div id="mercModalidadVentaOtroField" class="otro-field hidden">
         <input id="mercModalidadVentaOtro" type="text" placeholder="¿Qué otra modalidad?">
       </div>
-    </div>
-
-    <div class="field">
-      <label for="mercPrecio">Precio (opcional)</label>
-      <input id="mercPrecio" type="text" placeholder="S/15 por unidad, a tratar...">
     </div>
 
     <div class="field">
@@ -511,6 +528,7 @@
 
 <template id="cardTemplate">
   <article class="card">
+    <div class="card-photos"></div>
     <div class="badge-row">
       <span class="badge tipo-badge"></span>
       <span class="badge badge-urgente urgente-badge">Urgente</span>
@@ -534,7 +552,7 @@
 
 <template id="mercCardTemplate">
   <article class="card">
-    <img class="card-photo" alt="Foto de referencia">
+    <div class="card-photos"></div>
     <div class="badge-row">
       <span class="badge tipo-badge"></span>
       <span class="badge badge-urgente urgente-badge">Urgente</span>

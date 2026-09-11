@@ -144,7 +144,7 @@ const MERC_SEED_DATA = [
   {
     tipo: 'vendo', items: ['Chompas/Tejido'], tallas: ['S', 'M', 'L', 'XL'], colores: ['Multicolor/Varios colores'],
     cantidad: '200 unidades', ventaTipo: 'Mayor y menor', modalidadVenta: ['Recojo en tienda/domicilio', 'Envío a nivel nacional'],
-    precio: 'S/25 por unidad al por mayor', zona: 'Gamarra', contacto: 'Manuel R.', whatsapp: '911000001',
+    precioMayor: 'S/25 por unidad', precioMenor: 'S/35 por unidad', zona: 'Gamarra', contacto: 'Manuel R.', whatsapp: '911000001',
     descripcion: 'Chompas de tejido grueso, varios colores. Mando fotos y video por WhatsApp.',
     documento: '20601987654', documentoTipo: 'RUC',
     urgente: false, fecha: Date.now() - 1000 * 60 * 60 * 10,
@@ -152,14 +152,14 @@ const MERC_SEED_DATA = [
   {
     tipo: 'compro', items: ['Ropa deportiva'], tallas: [], colores: [],
     cantidad: '1000 unidades', ventaTipo: 'Por mayor', modalidadVenta: [],
-    precio: '', zona: 'Cercado de Lima', contacto: 'Distribuidora Andina', whatsapp: '922000002',
+    precioMayor: '', precioMenor: '', zona: 'Cercado de Lima', contacto: 'Distribuidora Andina', whatsapp: '922000002',
     descripcion: 'Mayorista busca proveedor constante de ropa deportiva.', urgente: false,
     fecha: Date.now() - 1000 * 60 * 60 * 15,
   },
   {
     tipo: 'vendo', items: ['Chompas/Tejido'], tallas: ['Talla única/estándar'], colores: ['Multicolor/Varios colores'],
     cantidad: '500 unidades', ventaTipo: 'Por mayor', modalidadVenta: ['Contra entrega', 'Envío de muestra primero'],
-    precio: 'A tratar según cantidad', zona: 'Provincia - Sierra', contacto: 'Confecciones Rivera', whatsapp: '944556677',
+    precioMayor: 'A tratar según cantidad', precioMenor: '', zona: 'Provincia - Sierra', contacto: 'Confecciones Rivera', whatsapp: '944556677',
     descripcion: 'Chompas para temporada de frío, pensadas para reventa en provincia. Mando muestra primero.',
     urgente: true, fecha: Date.now() - 1000 * 60 * 60 * 6,
   },
@@ -173,7 +173,9 @@ let activeMercTipo = '';
 let editingId = null;
 let mercEditingId = null;
 let currentView = 'empleos';
-let pendingMercFoto = '';
+const MAX_PHOTOS = 3;
+let formPhotoPicker = null;
+let mercPhotoPicker = null;
 
 function loadFrom(key, seed, prefix) {
   try {
@@ -186,7 +188,7 @@ function loadFrom(key, seed, prefix) {
 }
 
 function saveListings(data) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) { /* ignore */ }
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); return true; } catch (e) { return false; }
 }
 
 function saveMercListings(data) {
@@ -216,6 +218,53 @@ function readAndCompressImage(file, maxDim, quality) {
     reader.onerror = () => reject(new Error('No se pudo leer el archivo.'));
     reader.readAsDataURL(file);
   });
+}
+
+// Controla un selector de "hasta MAX_PHOTOS fotos" para un formulario: comprime
+// cada imagen al elegirla, dibuja las miniaturas, y permite quitarlas una por una.
+function makePhotoPicker(inputId, listId, labelId) {
+  let photos = [];
+
+  function renderThumbs() {
+    const list = document.getElementById(listId);
+    list.innerHTML = '';
+    photos.forEach((src, i) => {
+      const thumb = document.createElement('div');
+      thumb.className = 'foto-thumb';
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = '';
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'foto-thumb-remove';
+      removeBtn.setAttribute('aria-label', 'Quitar foto');
+      removeBtn.textContent = '×';
+      removeBtn.addEventListener('click', () => { photos.splice(i, 1); renderThumbs(); });
+      thumb.appendChild(img);
+      thumb.appendChild(removeBtn);
+      list.appendChild(thumb);
+    });
+    document.getElementById(labelId).classList.toggle('hidden', photos.length >= MAX_PHOTOS);
+  }
+
+  document.getElementById(inputId).addEventListener('change', async (e) => {
+    const files = Array.from(e.target.files).slice(0, MAX_PHOTOS - photos.length);
+    for (const file of files) {
+      try {
+        photos.push(await readAndCompressImage(file, 480, 0.55));
+      } catch (err) {
+        alert('No se pudo procesar una de las imágenes. Prueba con otra.');
+      }
+    }
+    e.target.value = '';
+    renderThumbs();
+  });
+
+  return {
+    get: () => photos,
+    set(arr) { photos = (arr || []).slice(0, MAX_PHOTOS); renderThumbs(); },
+    reset() { photos = []; renderThumbs(); },
+  };
 }
 
 function loadMineIds() {
@@ -320,6 +369,17 @@ function parseDocumento(raw) {
   return null;
 }
 
+function renderCardPhotos(node, fotos) {
+  const container = node.querySelector('.card-photos');
+  if (!fotos || !fotos.length) { container.remove(); return; }
+  fotos.forEach(src => {
+    const img = document.createElement('img');
+    img.src = src;
+    img.alt = '';
+    container.appendChild(img);
+  });
+}
+
 function renderDocLine(node, listing) {
   const docEl = node.querySelector('.doc-line');
   if (listing.documentoTipo === 'RUC') {
@@ -416,6 +476,7 @@ function render() {
     article.dataset.id = listing.id;
 
     node.querySelector('.owner-actions').classList.toggle('hidden', !mineIds.includes(listing.id));
+    renderCardPhotos(node, listing.fotos);
 
     const tipoBadge = node.querySelector('.tipo-badge');
     tipoBadge.textContent = listing.tipo === 'ofrezco' ? 'Busca personal' : 'Busca trabajo';
@@ -475,6 +536,7 @@ function openModalForCreate() {
   const form = document.getElementById('publishForm');
   form.reset();
   hideOtroFieldsIn('publishForm');
+  formPhotoPicker.reset();
   updatePerfilSections();
   updateTallerSection();
   updateZonaOtroVisibility('formZona', 'zonaOtroField');
@@ -517,6 +579,8 @@ function openModalForEdit(listing) {
   document.getElementById('formDescripcion').value = listing.descripcion || '';
   document.getElementById('formUrgente').checked = listing.urgente;
 
+  formPhotoPicker.set(listing.fotos);
+
   updatePerfilSections();
   updateTallerSection();
   updateZonaOtroVisibility('formZona', 'zonaOtroField');
@@ -549,6 +613,8 @@ function initEmpleosForm() {
   wireOtroToggle('maquinaChips', 'maquinaOtroField');
   wireOtroToggle('operacionChips', 'operacionOtroField');
   wireOtroToggle('manualChips', 'manualOtroField');
+
+  formPhotoPicker = makePhotoPicker('formFoto', 'formFotoPreviewList', 'formFotoLabel');
 
   document.getElementById('grid').addEventListener('click', (e) => {
     const card = e.target.closest('.card');
@@ -594,19 +660,28 @@ function initEmpleosForm() {
       urgente: document.getElementById('formUrgente').checked,
       documento: doc.valor,
       documentoTipo: doc.tipo,
+      fotos: formPhotoPicker.get(),
     };
 
+    const nextListings = listings.slice();
+    let newId = null;
     if (editingId) {
-      const idx = listings.findIndex(l => l.id === editingId);
-      if (idx !== -1) listings[idx] = { ...listings[idx], ...data };
+      const idx = nextListings.findIndex(l => l.id === editingId);
+      if (idx !== -1) nextListings[idx] = { ...nextListings[idx], ...data };
     } else {
-      const id = 'l-' + Date.now();
-      listings.unshift({ id, ...data, fecha: Date.now() });
-      mineIds.push(id);
-      saveMineIds();
+      newId = 'l-' + Date.now();
+      nextListings.unshift({ id: newId, ...data, fecha: Date.now() });
     }
 
-    saveListings(listings);
+    if (!saveListings(nextListings)) {
+      alert('No se pudo guardar. Es probable que las fotos sean muy pesadas para este navegador — prueba con menos fotos o más livianas.');
+      return;
+    }
+    listings = nextListings;
+    if (newId) {
+      mineIds.push(newId);
+      saveMineIds();
+    }
     closeModal();
     render();
   });
@@ -656,7 +731,7 @@ function matchesMercFilters(listing) {
   if (q) {
     const haystack = [
       listing.contacto, listing.descripcion, listing.zona, listing.cantidad,
-      listing.ventaTipo, listing.precio, ...listing.items, ...listing.tallas, ...listing.colores, ...listing.modalidadVenta,
+      listing.ventaTipo, listing.precioMayor, listing.precioMenor, ...listing.items, ...listing.tallas, ...listing.colores, ...listing.modalidadVenta,
     ].join(' ').toLowerCase();
     if (!haystack.includes(q)) return false;
   }
@@ -686,8 +761,7 @@ function mercRender() {
 
     node.querySelector('.owner-actions').classList.toggle('hidden', !mineIds.includes(listing.id));
 
-    const photoEl = node.querySelector('.card-photo');
-    if (listing.foto) { photoEl.src = listing.foto; } else { photoEl.remove(); }
+    renderCardPhotos(node, listing.fotos || (listing.foto ? [listing.foto] : []));
 
     const tipoBadge = node.querySelector('.tipo-badge');
     tipoBadge.textContent = listing.tipo === 'vendo' ? 'Vendo' : 'Busco comprar';
@@ -708,7 +782,11 @@ function mercRender() {
       listing.ventaTipo ? `Venta: ${listing.ventaTipo}` : '',
     ].filter(Boolean).join(' · ');
     appendMetaLine(metaLines, metaTpl, cantidadVenta);
-    appendMetaLine(metaLines, metaTpl, listing.precio ? `Precio: ${listing.precio}` : '');
+    const precioLine = [
+      listing.precioMayor ? `Mayor: ${listing.precioMayor}` : '',
+      listing.precioMenor ? `Menor: ${listing.precioMenor}` : '',
+    ].filter(Boolean).join(' · ');
+    appendMetaLine(metaLines, metaTpl, precioLine ? `Precio — ${precioLine}` : '');
 
     appendChips(node.querySelector('.modalidad-venta-chips'), listing.modalidadVenta, 'chip chip-disponibilidad');
 
@@ -721,20 +799,19 @@ function mercRender() {
   });
 }
 
+function updatePrecioFields() {
+  const venta = document.getElementById('mercVentaTipo').value;
+  const tipo = document.querySelector('input[name="mercTipo"]:checked').value;
+  const showMayor = venta === 'Por mayor' || venta === 'Mayor y menor';
+  const showMenor = venta === 'Por menor' || venta === 'Mayor y menor';
+  document.getElementById('precioMayorField').classList.toggle('hidden', !showMayor);
+  document.getElementById('precioMenorField').classList.toggle('hidden', !showMenor);
+  document.getElementById('mercPrecioMayor').required = showMayor && tipo === 'vendo';
+  document.getElementById('mercPrecioMenor').required = showMenor && tipo === 'vendo';
+}
+
 function openMercModal() { document.getElementById('mercModal').classList.add('open'); }
 function closeMercModal() { document.getElementById('mercModal').classList.remove('open'); }
-
-function showMercFotoPreview(dataUrl) {
-  document.getElementById('mercFotoPreviewImg').src = dataUrl;
-  document.getElementById('mercFotoPreview').classList.remove('hidden');
-  document.getElementById('mercFotoLabel').textContent = 'Cambiar foto';
-}
-
-function hideMercFotoPreview() {
-  document.getElementById('mercFotoPreview').classList.add('hidden');
-  document.getElementById('mercFotoPreviewImg').src = '';
-  document.getElementById('mercFotoLabel').textContent = 'Elegir foto';
-}
 
 function openMercModalForCreate() {
   mercEditingId = null;
@@ -742,8 +819,8 @@ function openMercModalForCreate() {
   form.reset();
   hideOtroFieldsIn('mercForm');
   updateZonaOtroVisibility('mercZona', 'mercZonaOtroField');
-  pendingMercFoto = '';
-  hideMercFotoPreview();
+  mercPhotoPicker.reset();
+  updatePrecioFields();
   document.getElementById('mercModalTitle').textContent = 'Publicar mercadería';
   document.getElementById('mercSubmitBtn').textContent = 'Publicar';
   openMercModal();
@@ -761,7 +838,9 @@ function openMercModalForEdit(listing) {
   document.getElementById('mercCantidad').value = listing.cantidad || '';
   document.getElementById('mercVentaTipo').value = listing.ventaTipo || '';
   populateChipGroup('mercModalidadVentaChips', MODALIDAD_VENTA, listing.modalidadVenta, 'mercModalidadVentaOtro', 'mercModalidadVentaOtroField');
-  document.getElementById('mercPrecio').value = listing.precio || '';
+  document.getElementById('mercPrecioMayor').value = listing.precioMayor || '';
+  document.getElementById('mercPrecioMenor').value = listing.precioMenor || '';
+  updatePrecioFields();
 
   if (MERC_ZONAS.includes(listing.zona)) {
     document.getElementById('mercZona').value = listing.zona;
@@ -776,8 +855,7 @@ function openMercModalForEdit(listing) {
   document.getElementById('mercDescripcion').value = listing.descripcion || '';
   document.getElementById('mercUrgente').checked = listing.urgente;
 
-  pendingMercFoto = listing.foto || '';
-  if (pendingMercFoto) { showMercFotoPreview(pendingMercFoto); } else { hideMercFotoPreview(); }
+  mercPhotoPicker.set(listing.fotos || (listing.foto ? [listing.foto] : []));
 
   updateZonaOtroVisibility('mercZona', 'mercZonaOtroField');
   document.getElementById('mercModalTitle').textContent = 'Editar publicación';
@@ -800,27 +878,16 @@ function initMercForm() {
     if (e.target.id === 'mercModal') closeMercModal();
   });
 
+  document.getElementById('mercVentaTipo').addEventListener('change', updatePrecioFields);
+  document.querySelectorAll('input[name="mercTipo"]').forEach(i => i.addEventListener('change', updatePrecioFields));
+
   wireZonaOtro('mercZona', 'mercZonaOtroField');
   wireOtroToggle('mercItemChips', 'mercItemOtroField');
   wireOtroToggle('mercTallaChips', 'mercTallaOtroField');
   wireOtroToggle('mercColorChips', 'mercColorOtroField');
   wireOtroToggle('mercModalidadVentaChips', 'mercModalidadVentaOtroField');
 
-  document.getElementById('mercFoto').addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    try {
-      pendingMercFoto = await readAndCompressImage(file, 480, 0.55);
-      showMercFotoPreview(pendingMercFoto);
-    } catch (err) {
-      alert('No se pudo procesar esa imagen. Prueba con otra.');
-    }
-  });
-  document.getElementById('mercFotoRemove').addEventListener('click', () => {
-    pendingMercFoto = '';
-    document.getElementById('mercFoto').value = '';
-    hideMercFotoPreview();
-  });
+  mercPhotoPicker = makePhotoPicker('mercFoto', 'mercFotoPreviewList', 'mercFotoLabel');
 
   document.getElementById('mercGrid').addEventListener('click', (e) => {
     const card = e.target.closest('.card');
@@ -851,13 +918,14 @@ function initMercForm() {
       cantidad: document.getElementById('mercCantidad').value.trim(),
       ventaTipo: document.getElementById('mercVentaTipo').value,
       modalidadVenta: resolveChipValues('mercModalidadVentaChips', 'mercModalidadVentaOtro'),
-      precio: document.getElementById('mercPrecio').value.trim(),
+      precioMayor: document.getElementById('mercPrecioMayor').value.trim(),
+      precioMenor: document.getElementById('mercPrecioMenor').value.trim(),
       zona: resolveZona('mercZona', 'mercZonaOtro'),
       contacto: document.getElementById('mercContacto').value.trim(),
       whatsapp: whatsappDigits,
       descripcion: document.getElementById('mercDescripcion').value.trim(),
       urgente: document.getElementById('mercUrgente').checked,
-      foto: pendingMercFoto,
+      fotos: mercPhotoPicker.get(),
       documento: doc.valor,
       documentoTipo: doc.tipo,
     };
