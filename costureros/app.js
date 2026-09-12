@@ -14,7 +14,7 @@ const db = (typeof supabase !== 'undefined') ? supabase.createClient(SUPABASE_UR
 // (no se borra, solo deja de aparecer en las búsquedas). Pagar por Yape extiende
 // "vence" y marca "destacado" — ver confirmYapePayment() y el README.
 const DIAS_GRATIS = 7;
-const DIAS_EXTENSION_PAGADA = 30;
+const DIAS_EXTENSION_PAGADA = 7; // referencia para el README/SQL de "marcar destacado" — no la lee el código.
 
 function empleoToDb(l) {
   return {
@@ -70,15 +70,15 @@ const YAPE_NUMBER = '926924581';
 const PERFILES = ['Operario(a) de máquina', 'Manual de costura', 'Cortador(a)', 'Vendedor(a)'];
 
 const PRENDAS = [
-  'Polos/Camisetas', 'Camisas', 'Pantalones/Jeans', 'Ropa deportiva',
+  'Polos', 'Camisetas', 'Camisas', 'Pantalones/Jeans', 'Ropa deportiva',
   'Ropa interior/Lencería', 'Uniformes', 'Chompas/Tejido', 'Casacas', 'Otra'
 ];
 
-const TELAS = ['Tela punto (polos, buzos)', 'Tela plana', 'Denim/Jean', 'Drill (ropa de trabajo)', 'Tejido grueso', 'Otra'];
+const TELAS = ['Tela punto (polos, buzos)', 'Tela plana (denim, drill, etc.)', 'Tejido grueso', 'Otra'];
 
 const EXPERIENCIA = [
   'Sin experiencia', 'Sin experiencia, con ganas de aprender',
-  'Menos de 1 año', '1 a 3 años', '3 a 5 años', 'Más de 5 años'
+  'Menos de 1 año', '1 a 3 años', '3 a 5 años', '5 a 10 años', 'Más de 10 años', 'Más de 15 años'
 ];
 
 const MAQUINAS = [
@@ -97,15 +97,15 @@ const TAMANO_TALLER = ['Taller pequeño', 'Taller mediano', 'Taller grande / Fá
 
 const MODALIDAD_PAGO = ['Jornal (sueldo semanal)', 'Destajo por prenda (armado completo)', 'Destajo por operación', 'Pago por días trabajados', 'A tratar'];
 
-const DISPONIBILIDAD = ['Tiempo completo (L-S)', 'Medio tiempo / días específicos', 'Fines de semana', 'Turno noche', 'Amanecidas'];
+const DISPONIBILIDAD = ['Tiempo completo (L-S)', 'Medio tiempo (mañana)', 'Medio tiempo (tarde)', 'Días específicos', 'Fines de semana', 'Turno noche', 'Amanecidas', 'Otra'];
 
 const ZONAS = [
-  'Santa Anita', 'Ate', 'La Molina', 'San Luis', 'Vitarte',
+  'Santa Anita', 'Ate - Vitarte', 'La Molina', 'San Luis',
   'El Agustino', 'San Juan de Lurigancho', 'Chosica', 'Cercado de Lima', 'Gamarra', 'Otro'
 ];
 
 const MERC_ITEMS = [
-  'Polos/Camisetas', 'Camisas', 'Pantalones/Jeans', 'Ropa deportiva',
+  'Polos', 'Camisetas', 'Camisas', 'Pantalones/Jeans', 'Ropa deportiva',
   'Ropa interior/Lencería', 'Uniformes', 'Chompas/Tejido', 'Casacas',
   'Telas (por rollo)', 'Insumos/Accesorios de costura', 'Otra'
 ];
@@ -122,7 +122,7 @@ const VENTA_TIPO = ['Por mayor', 'Por menor', 'Mayor y menor'];
 const MODALIDAD_VENTA = ['Contra entrega', 'Envío de muestra primero', 'Recojo en tienda/domicilio', 'Envío a nivel nacional', 'Otra'];
 
 const MERC_ZONAS = [
-  'Santa Anita', 'Ate', 'La Molina', 'San Luis', 'Vitarte',
+  'Santa Anita', 'Ate - Vitarte', 'La Molina', 'San Luis',
   'El Agustino', 'San Juan de Lurigancho', 'Chosica', 'Cercado de Lima', 'Gamarra',
   'Provincia - Sierra', 'Provincia - Costa', 'Provincia - Selva', 'Todo el Perú (envío nacional)', 'Otro'
 ];
@@ -320,6 +320,16 @@ function resolveChipValues(containerId, otroInputId) {
   return [...withoutOtra, ...customValues];
 }
 
+// Como resolveChipValues, pero para un "otro" de texto libre en prosa (una
+// explicación, no una lista de ítems) — no separa por comas.
+function resolveOtroText(containerId, otroInputId, triggerValue = 'Otra') {
+  const checked = checkedValues(containerId);
+  if (!checked.includes(triggerValue)) return checked;
+  const custom = document.getElementById(otroInputId).value.trim();
+  if (!custom) return checked;
+  return [...checked.filter(v => v !== triggerValue), custom];
+}
+
 function populateChipGroup(containerId, canonicalList, storedValues, otroInputId, otroFieldId) {
   const canonicalSet = new Set(canonicalList);
   const leftovers = storedValues.filter(v => !canonicalSet.has(v));
@@ -331,12 +341,33 @@ function populateChipGroup(containerId, canonicalList, storedValues, otroInputId
   document.getElementById(otroFieldId).classList.toggle('hidden', !hasOtra);
 }
 
-function wireOtroToggle(containerId, otroFieldId) {
-  const otraCheckbox = document.querySelector(`#${containerId} input[value="Otra"]`);
+function wireOtroToggle(containerId, otroFieldId, triggerValue = 'Otra') {
+  const otraCheckbox = document.querySelector(`#${containerId} input[value="${triggerValue}"]`);
   if (!otraCheckbox) return;
   otraCheckbox.addEventListener('change', () => {
     document.getElementById(otroFieldId).classList.toggle('hidden', !otraCheckbox.checked);
   });
+}
+
+// ---------- Modalidad de pago: multi-selección + detalle cuando incluye "A tratar" ----------
+
+function resolveModalidadPago(containerId, detalleInputId) {
+  const checked = checkedValues(containerId);
+  const detalle = document.getElementById(detalleInputId).value.trim();
+  return checked.map(v => (v === 'A tratar' && detalle) ? `A tratar: ${detalle}` : v);
+}
+
+function populateModalidadPago(containerId, storedValues, detalleInputId, detalleFieldId) {
+  let detalle = '';
+  const normalized = (storedValues || []).map(v => {
+    if (v.startsWith('A tratar:')) { detalle = v.slice('A tratar:'.length).trim(); return 'A tratar'; }
+    return v;
+  });
+  document.querySelectorAll(`#${containerId} input`).forEach(cb => {
+    cb.checked = normalized.includes(cb.value);
+  });
+  document.getElementById(detalleInputId).value = detalle;
+  document.getElementById(detalleFieldId).classList.toggle('hidden', !normalized.includes('A tratar'));
 }
 
 function hideOtroFieldsIn(rootId) {
@@ -446,7 +477,7 @@ function matchesFilters(listing) {
   if (q) {
     const haystack = [
       listing.contacto, listing.descripcion, listing.zona, listing.experiencia,
-      listing.tamanoTaller, listing.modalidadPago,
+      listing.tamanoTaller, ...(listing.modalidadPago || []),
       ...listing.perfiles, ...listing.prendas, ...listing.telas, ...(listing.zonasTrabajo || []),
       ...listing.maquinas, ...listing.operaciones, ...listing.laborManual, ...listing.disponibilidad,
     ].join(' ').toLowerCase();
@@ -507,7 +538,7 @@ function render() {
     appendMetaLine(metaLines, metaTpl, listing.tipo === 'ofrezco' && listing.tamanoTaller ? listing.tamanoTaller : '');
     appendMetaLine(metaLines, metaTpl, listing.tipo === 'busco' && listing.zonasTrabajo && listing.zonasTrabajo.length ? `También trabajaría en: ${listing.zonasTrabajo.join(', ')}` : '');
 
-    const pagoParts = [listing.modalidadPago, listing.pago].filter(Boolean).join(' · ');
+    const pagoParts = [(listing.modalidadPago || []).join(', '), listing.pago].filter(Boolean).join(' · ');
     const pagoEl = node.querySelector('.pago-text');
     if (pagoParts) { pagoEl.textContent = pagoParts; } else { pagoEl.remove(); }
 
@@ -577,11 +608,9 @@ function openModalForEdit(listing) {
     document.getElementById('formZona').value = 'Otro';
     document.getElementById('zonaOtro').value = listing.zona;
   }
-  document.getElementById('formModalidadPago').value = listing.modalidadPago || '';
+  populateModalidadPago('modalidadPagoChips', listing.modalidadPago, 'modalidadPagoDetalle', 'modalidadPagoDetalleField');
   document.getElementById('formPago').value = listing.pago || '';
-  document.querySelectorAll('#disponibilidadChips input').forEach(cb => {
-    cb.checked = listing.disponibilidad.includes(cb.value);
-  });
+  populateChipGroup('disponibilidadChips', DISPONIBILIDAD, listing.disponibilidad, 'disponibilidadOtro', 'disponibilidadOtroField');
   populateChipGroup('zonaTrabajoChips', ZONAS, listing.zonasTrabajo || [], 'zonaTrabajoOtro', 'zonaTrabajoOtroField');
   document.getElementById('formContacto').value = listing.contacto;
   document.getElementById('formWhatsapp').value = listing.whatsapp;
@@ -611,8 +640,8 @@ function reportListing(sectionLabel, listing) {
 function confirmYapePayment(contactoInputId, whatsappInputId) {
   const contacto = document.getElementById(contactoInputId).value.trim();
   const whatsapp = document.getElementById(whatsappInputId).value.trim();
-  const body = `Hola, ya yapeé a ${YAPE_NUMBER} para destacar/extender mi aviso${contacto ? ` ("${contacto}")` : ''}.\n\nMi WhatsApp: ${whatsapp}\n\nVoy a adjuntar la captura del pago a este correo.`;
-  openAdminEmail('Confirmación de pago Yape', body);
+  const msg = `Hola, ya yapeé para destacar/extender mi aviso${contacto ? ` ("${contacto}")` : ''}. Mi WhatsApp: ${whatsapp}. Te comparto el comprobante.`;
+  window.open(`https://wa.me/51${YAPE_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
 async function deleteListing(id) {
@@ -686,9 +715,9 @@ function initEmpleosForm() {
       operaciones: perfiles.includes('Operario(a) de máquina') ? resolveChipValues('operacionChips', 'operacionOtro') : [],
       laborManual: perfiles.includes('Manual de costura') ? resolveChipValues('manualChips', 'manualOtro') : [],
       tamanoTaller: tipo === 'ofrezco' ? document.getElementById('formTamanoTaller').value : '',
-      modalidadPago: document.getElementById('formModalidadPago').value,
+      modalidadPago: resolveModalidadPago('modalidadPagoChips', 'modalidadPagoDetalle'),
       pago: document.getElementById('formPago').value.trim(),
-      disponibilidad: checkedValues('disponibilidadChips'),
+      disponibilidad: resolveOtroText('disponibilidadChips', 'disponibilidadOtro'),
       zona: resolveZona('formZona', 'zonaOtro'),
       zonasTrabajo: tipo === 'busco' ? resolveChipValues('zonaTrabajoChips', 'zonaTrabajoOtro') : [],
       contacto: document.getElementById('formContacto').value.trim(),
@@ -1070,7 +1099,6 @@ async function init() {
   fillSelect(document.getElementById('formZona'), ZONAS);
   fillSelect(document.getElementById('formExperiencia'), EXPERIENCIA);
   fillSelect(document.getElementById('formTamanoTaller'), TAMANO_TALLER);
-  fillSelect(document.getElementById('formModalidadPago'), MODALIDAD_PAGO);
 
   buildChipGroup('perfilChips', PERFILES);
   buildChipGroup('prendaChips', PRENDAS);
@@ -1078,8 +1106,11 @@ async function init() {
   buildChipGroup('maquinaChips', MAQUINAS);
   buildChipGroup('operacionChips', OPERACIONES);
   buildChipGroup('manualChips', LABOR_MANUAL);
+  buildChipGroup('modalidadPagoChips', MODALIDAD_PAGO);
   buildChipGroup('disponibilidadChips', DISPONIBILIDAD);
   buildChipGroup('zonaTrabajoChips', ZONAS);
+  wireOtroToggle('modalidadPagoChips', 'modalidadPagoDetalleField', 'A tratar');
+  wireOtroToggle('disponibilidadChips', 'disponibilidadOtroField');
 
   updatePerfilSections();
   updateTallerSection();

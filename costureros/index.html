@@ -192,8 +192,8 @@
         <div id="formFotoPreviewList" class="mt-2 flex flex-wrap gap-2 empty:mt-0"></div>
       </div>
       <p class="text-[12px] text-ink-soft mt-1.5">El taller puede mostrar fotos del taller o del trabajo; el costurero/a puede mostrar su propio trabajo. Se comprimen automáticamente.</p>
-      <label id="formFotoConfirmWrap" class="hidden items-center gap-2 text-[14px] font-semibold bg-white border border-stone-200 rounded-full px-3.5 py-2.5 mt-2.5">
-        <input id="formFotoConfirm" type="checkbox" class="accent-thread w-4 h-4"> Confirmo que mis fotos son apropiadas para el aviso (nada de contenido explícito u ofensivo)
+      <label id="formFotoConfirmWrap" class="hidden items-start gap-2 text-[14px] font-semibold bg-white border border-stone-200 rounded-2xl px-3.5 py-3 mt-3">
+        <input id="formFotoConfirm" type="checkbox" class="accent-thread w-4 h-4 mt-0.5 shrink-0"> Confirmo que mis fotos son apropiadas para el aviso (nada de contenido explícito u ofensivo)
       </label>
     </div>
 
@@ -207,7 +207,7 @@
     <div class="mb-4">
       <label id="prendaLabel" class="block text-[14px] font-semibold mb-2">Prenda(s) que trabaja</label>
       <div id="prendaChips" class="flex flex-wrap gap-1.5" role="group" aria-labelledby="prendaLabel"></div>
-      <div id="prendaOtroField" class="hidden mt-2">
+      <div id="prendaOtroField" class="otro-field hidden mt-2">
         <input id="prendaOtro" type="text" placeholder="¿Qué otra prenda? (separa con coma si son varias)" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
       </div>
     </div>
@@ -215,7 +215,7 @@
     <div class="mb-4">
       <label id="telaLabel" class="block text-[14px] font-semibold mb-2">Tela que maneja</label>
       <div id="telaChips" class="flex flex-wrap gap-1.5" role="group" aria-labelledby="telaLabel"></div>
-      <div id="telaOtroField" class="hidden mt-2">
+      <div id="telaOtroField" class="otro-field hidden mt-2">
         <input id="telaOtro" type="text" placeholder="¿Qué otra tela?" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
       </div>
     </div>
@@ -229,14 +229,14 @@
       <div class="mb-4">
         <label id="maquinaLabel" class="block text-[14px] font-semibold mb-2">Máquina(s) que domina</label>
         <div id="maquinaChips" class="flex flex-wrap gap-1.5" role="group" aria-labelledby="maquinaLabel"></div>
-        <div id="maquinaOtroField" class="hidden mt-2">
+        <div id="maquinaOtroField" class="otro-field hidden mt-2">
           <input id="maquinaOtro" type="text" placeholder="¿Qué otra máquina?" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
         </div>
       </div>
       <div class="mb-4">
         <label id="operacionLabel" class="block text-[14px] font-semibold mb-2">Operación</label>
         <div id="operacionChips" class="flex flex-wrap gap-1.5" role="group" aria-labelledby="operacionLabel"></div>
-        <div id="operacionOtroField" class="hidden mt-2">
+        <div id="operacionOtroField" class="otro-field hidden mt-2">
           <input id="operacionOtro" type="text" placeholder="¿Qué otra operación?" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
         </div>
       </div>
@@ -246,7 +246,7 @@
       <div class="mb-4">
         <label id="manualLabel" class="block text-[14px] font-semibold mb-2">Labor manual</label>
         <div id="manualChips" class="flex flex-wrap gap-1.5" role="group" aria-labelledby="manualLabel"></div>
-        <div id="manualOtroField" class="hidden mt-2">
+        <div id="manualOtroField" class="otro-field hidden mt-2">
           <input id="manualOtro" type="text" placeholder="¿Qué otra labor manual?" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
         </div>
       </div>
@@ -259,24 +259,26 @@
 
     <p class="text-[11px] font-bold uppercase tracking-wide text-thread-dark mt-6 mb-3 pt-3.5 border-t border-stone-200">Pago y horario</p>
 
-    <div class="mb-4 grid grid-cols-2 gap-2.5">
-      <div>
-        <label id="formZonaLabel" for="formZona" class="block text-[14px] font-semibold mb-2">Zona</label>
-        <select id="formZona" required class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5"></select>
-        <div id="zonaOtroField" class="hidden mt-2">
-          <input id="zonaOtro" type="text" placeholder="¿Qué distrito/zona?" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
-        </div>
+    <div class="mb-4">
+      <label id="formZonaLabel" for="formZona" class="block text-[14px] font-semibold mb-2">Zona</label>
+      <select id="formZona" required class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5"></select>
+      <div id="zonaOtroField" class="otro-field hidden mt-2">
+        <input id="zonaOtro" type="text" placeholder="¿Qué distrito/zona?" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
       </div>
-      <div>
-        <label for="formModalidadPago" class="block text-[14px] font-semibold mb-2">Modalidad de pago</label>
-        <select id="formModalidadPago" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5"><option value="">No especificar</option></select>
+    </div>
+
+    <div class="mb-4">
+      <label id="modalidadPagoLabel" class="block text-[14px] font-semibold mb-2">Modalidad de pago (puedes marcar varias)</label>
+      <div id="modalidadPagoChips" class="flex flex-wrap gap-1.5" role="group" aria-labelledby="modalidadPagoLabel"></div>
+      <div id="modalidadPagoDetalleField" class="otro-field hidden mt-2">
+        <input id="modalidadPagoDetalle" type="text" placeholder="¿Cómo prefieres que te paguen?" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
       </div>
     </div>
 
     <div id="zonaTrabajoSection" class="hidden mb-4">
       <label id="zonaTrabajoLabel" class="block text-[14px] font-semibold mb-2">¿En qué otras zonas te gustaría trabajar? (opcional)</label>
       <div id="zonaTrabajoChips" class="flex flex-wrap gap-1.5" role="group" aria-labelledby="zonaTrabajoLabel"></div>
-      <div id="zonaTrabajoOtroField" class="hidden mt-2">
+      <div id="zonaTrabajoOtroField" class="otro-field hidden mt-2">
         <input id="zonaTrabajoOtro" type="text" placeholder="¿Qué otra zona?" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
       </div>
       <p class="text-[12px] text-ink-soft mt-1.5">Si no marcas ninguna, se asume que solo te interesa cerca de donde vives.</p>
@@ -290,6 +292,9 @@
     <div class="mb-4">
       <label id="dispoLabel" class="block text-[14px] font-semibold mb-2">Disponibilidad</label>
       <div id="disponibilidadChips" class="flex flex-wrap gap-1.5" role="group" aria-labelledby="dispoLabel"></div>
+      <div id="disponibilidadOtroField" class="otro-field hidden mt-2">
+        <input id="disponibilidadOtro" type="text" placeholder="Cuéntanos tu horario o disponibilidad exacta" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
+      </div>
     </div>
 
     <p class="text-[11px] font-bold uppercase tracking-wide text-thread-dark mt-6 mb-3 pt-3.5 border-t border-stone-200">Contacto</p>
@@ -321,7 +326,7 @@
     </label>
 
     <button type="submit" id="submitBtn" class="submit-btn w-full py-3.5 border-0 rounded-full text-white font-extrabold text-[15px] cursor-pointer transition-transform">Publicar aviso</button>
-    <p class="text-[11px] text-center text-ink-soft mt-3">Tu aviso dura publicado gratis 7 días. ¿Quieres que se destaque (aparece primero) o dure 30 días más? Yapea a <strong>926924581</strong> y <a href="#" class="yape-confirm-link underline">avísanos por correo</a>.</p>
+    <p class="text-[11px] text-center text-ink-soft mt-3">Tu aviso dura publicado gratis 7 días. ¿Quieres que se destaque (aparece primero) o dure 7 días más? Yapea a <strong>926924581</strong> y <a href="#" class="yape-confirm-link underline">compártenos el comprobante por WhatsApp a ese mismo número</a>.</p>
   </form>
 </div>
 
@@ -348,15 +353,15 @@
         <div id="mercFotoPreviewList" class="mt-2 flex flex-wrap gap-2 empty:mt-0"></div>
       </div>
       <p class="text-[12px] text-ink-soft mt-1.5">Se comprimen automáticamente. Los videos no caben aquí — un solo video pesa más que todo el espacio disponible en este navegador; se comparten directo por WhatsApp una vez que te escriban.</p>
-      <label id="mercFotoConfirmWrap" class="hidden items-center gap-2 text-[14px] font-semibold bg-white border border-stone-200 rounded-full px-3.5 py-2.5 mt-2.5">
-        <input id="mercFotoConfirm" type="checkbox" class="accent-thread w-4 h-4"> Confirmo que mis fotos son apropiadas para el aviso (nada de contenido explícito u ofensivo)
+      <label id="mercFotoConfirmWrap" class="hidden items-start gap-2 text-[14px] font-semibold bg-white border border-stone-200 rounded-2xl px-3.5 py-3 mt-3">
+        <input id="mercFotoConfirm" type="checkbox" class="accent-thread w-4 h-4 mt-0.5 shrink-0"> Confirmo que mis fotos son apropiadas para el aviso (nada de contenido explícito u ofensivo)
       </label>
     </div>
 
     <div class="mb-4">
       <label id="mercItemLabel" class="block text-[14px] font-semibold mb-2">¿Qué prenda(s) o insumo(s)?</label>
       <div id="mercItemChips" class="flex flex-wrap gap-1.5" role="group" aria-labelledby="mercItemLabel"></div>
-      <div id="mercItemOtroField" class="hidden mt-2">
+      <div id="mercItemOtroField" class="otro-field hidden mt-2">
         <input id="mercItemOtro" type="text" placeholder="¿Qué otra prenda o insumo? (separa con coma si son varios)" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
       </div>
     </div>
@@ -364,7 +369,7 @@
     <div class="mb-4">
       <label id="mercTallaLabel" class="block text-[14px] font-semibold mb-2">Talla(s)</label>
       <div id="mercTallaChips" class="flex flex-wrap gap-1.5" role="group" aria-labelledby="mercTallaLabel"></div>
-      <div id="mercTallaOtroField" class="hidden mt-2">
+      <div id="mercTallaOtroField" class="otro-field hidden mt-2">
         <input id="mercTallaOtro" type="text" placeholder="¿Qué otra talla? (ej: 28, 30, 32...)" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
       </div>
     </div>
@@ -372,7 +377,7 @@
     <div class="mb-4">
       <label id="mercColorLabel" class="block text-[14px] font-semibold mb-2">Color(es)</label>
       <div id="mercColorChips" class="flex flex-wrap gap-1.5" role="group" aria-labelledby="mercColorLabel"></div>
-      <div id="mercColorOtroField" class="hidden mt-2">
+      <div id="mercColorOtroField" class="otro-field hidden mt-2">
         <input id="mercColorOtro" type="text" placeholder="¿Qué otro color?" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
       </div>
     </div>
@@ -401,7 +406,7 @@
     <div class="mb-4">
       <label id="mercModalidadVentaLabel" class="block text-[14px] font-semibold mb-2">Modalidad de venta</label>
       <div id="mercModalidadVentaChips" class="flex flex-wrap gap-1.5" role="group" aria-labelledby="mercModalidadVentaLabel"></div>
-      <div id="mercModalidadVentaOtroField" class="hidden mt-2">
+      <div id="mercModalidadVentaOtroField" class="otro-field hidden mt-2">
         <input id="mercModalidadVentaOtro" type="text" placeholder="¿Qué otra modalidad?" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
       </div>
     </div>
@@ -409,7 +414,7 @@
     <div class="mb-4">
       <label for="mercZona" class="block text-[14px] font-semibold mb-2">Zona</label>
       <select id="mercZona" required class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5"></select>
-      <div id="mercZonaOtroField" class="hidden mt-2">
+      <div id="mercZonaOtroField" class="otro-field hidden mt-2">
         <input id="mercZonaOtro" type="text" placeholder="¿Qué distrito/zona?" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft">
       </div>
     </div>
@@ -442,7 +447,7 @@
 
     <button type="submit" id="mercSubmitBtn" class="submit-btn w-full py-3.5 border-0 rounded-full text-white font-extrabold text-[15px] cursor-pointer transition-transform">Publicar</button>
     <p class="text-[11px] text-center text-ink-soft mt-3">El video no se sube aquí (no cabe) — se comparte directo por WhatsApp una vez que te escriban.</p>
-    <p class="text-[11px] text-center text-ink-soft mt-2">Tu aviso dura publicado gratis 7 días. ¿Quieres que se destaque (aparece primero) o dure 30 días más? Yapea a <strong>926924581</strong> y <a href="#" class="yape-confirm-link underline">avísanos por correo</a>.</p>
+    <p class="text-[11px] text-center text-ink-soft mt-2">Tu aviso dura publicado gratis 7 días. ¿Quieres que se destaque (aparece primero) o dure 7 días más? Yapea a <strong>926924581</strong> y <a href="#" class="yape-confirm-link underline">compártenos el comprobante por WhatsApp a ese mismo número</a>.</p>
   </form>
 </div>
 

@@ -66,21 +66,24 @@ y después deja de aparecer en las búsquedas — no se borra, solo se oculta
 (`vence` en la base es una fecha, no un borrado). Imita lo que ya pasa en los
 carteles físicos: casi siempre se resuelve en los primeros días.
 
-Cuando alguien yapea para destacar o extender su aviso (el botón "avísanos
-por correo" del formulario te manda un correo con el nombre y el WhatsApp de
-la persona), confirmas el pago y luego marcas el aviso pegando esto en el
-SQL Editor de Supabase (reemplaza el número de WhatsApp por el de esa
-persona):
+Cuando alguien yapea para destacar o extender su aviso, te comparte el
+comprobante por WhatsApp al mismo número de Yape (el botón del formulario ya
+le abre WhatsApp con un mensaje que incluye su nombre y su propio WhatsApp).
+Confirmas el pago y luego marcas el aviso pegando esto en el SQL Editor de
+Supabase (reemplaza el número de WhatsApp por el de esa persona):
 
 ```sql
 update empleos set destacado = true,
-  vence = (extract(epoch from now())*1000)::bigint + 30*24*60*60*1000
+  vence = (extract(epoch from now())*1000)::bigint + 7*24*60*60*1000
 where whatsapp = '999999999';
 
 update mercaderia set destacado = true,
-  vence = (extract(epoch from now())*1000)::bigint + 30*24*60*60*1000
+  vence = (extract(epoch from now())*1000)::bigint + 7*24*60*60*1000
 where whatsapp = '999999999';
 ```
+
+(Si alguien paga por más tiempo, por ejemplo dos semanas, cambia el `7` por
+`14` en ese `UPDATE` — el precio de esa opción lo decides tú.)
 
 (Una de las dos tablas no va a encontrar esa fila y no hace nada — no pasa
 nada por correrlas ambas.) Un aviso "destacado" aparece primero en la lista
@@ -107,3 +110,5 @@ autodeclarado, sirve como filtro social liviano, no como garantía.
   pero con datos de contacto inventados).
 - `supabase/migration_002_vencimiento_destacado.sql` — agrega las columnas
   `vence` y `destacado` a una base ya creada (correr una sola vez).
+- `supabase/migration_003_modalidad_pago_multiple.sql` — convierte
+  "modalidad de pago" de una sola opción a varias (correr una sola vez).
