@@ -76,11 +76,11 @@
   #fab{ @apply bg-gradient-to-br from-accent to-accent-dark shadow-[0_10px_24px_-6px_rgba(91,110,35,.55)]; }
   #fab:hover{ @apply scale-105 rotate-90; }
 
-  #modal, #mercModal{ @apply hidden fixed inset-0 z-40 bg-black/55 backdrop-blur-[2px] items-end justify-center sm:items-center; }
-  #modal.open, #mercModal.open{ @apply flex; }
+  #modal, #mercModal, #servicioModal{ @apply hidden fixed inset-0 z-40 bg-black/55 backdrop-blur-[2px] items-end justify-center sm:items-center; }
+  #modal.open, #mercModal.open, #servicioModal.open{ @apply flex; }
 
-  #emptyState, #mercEmptyState{ @apply hidden; }
-  #emptyState.visible, #mercEmptyState.visible{ @apply block; }
+  #emptyState, #mercEmptyState, #servicioEmptyState{ @apply hidden; }
+  #emptyState.visible, #mercEmptyState.visible, #servicioEmptyState.visible{ @apply block; }
 </style>
 </head>
 <body class="font-sans text-ink bg-[#fbf9f5] antialiased">
@@ -105,7 +105,7 @@
 <div class="max-w-3xl mx-auto px-4">
   <div class="flex gap-1.5 mt-4 p-1.5 rounded-2xl bg-white border border-stone-200 shadow-sm" role="tablist" aria-label="Sección">
     <button class="mode-tab flex-1 py-2.5 rounded-xl text-ink font-extrabold text-[13px] uppercase tracking-wide cursor-pointer transition-all" data-view="empleos" aria-pressed="true">Empleos</button>
-    <button class="mode-tab flex-1 py-2.5 rounded-xl text-ink font-extrabold text-[13px] uppercase tracking-wide cursor-pointer transition-all" data-view="mercaderia" aria-pressed="false">Mercadería</button>
+    <button class="mode-tab flex-1 py-2.5 rounded-xl text-ink font-extrabold text-[13px] uppercase tracking-wide cursor-pointer transition-all" data-view="mercaderia" aria-pressed="false">Compra/Venta</button>
     <button class="mode-tab flex-1 py-2.5 rounded-xl text-ink font-extrabold text-[13px] uppercase tracking-wide cursor-pointer transition-all" data-view="servicios" aria-pressed="false">Servicios</button>
   </div>
 </div>
