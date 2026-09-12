@@ -94,7 +94,7 @@
       </div>
       <div>
         <h1 class="font-display text-xl font-extrabold text-white leading-tight tracking-tight m-0 text-balance">Confecciones Perú</h1>
-        <p class="m-0 text-sm text-white/80">Empleos, mercadería y servicios de confección, en un solo lugar</p>
+        <p class="m-0 text-sm text-white/95">Empleos, mercadería y servicios de confección, en un solo lugar</p>
       </div>
     </div>
     <button id="shareBtn" type="button" class="hidden items-center gap-2 text-sm font-bold px-3.5 py-2 rounded-full border border-white/50 bg-white/10 text-white hover:bg-white/20 transition-colors">
@@ -105,23 +105,23 @@
 
 <div class="max-w-3xl mx-auto px-4">
   <div class="flex gap-1.5 mt-4 p-1.5 rounded-2xl bg-white border border-stone-200 shadow-sm" role="tablist" aria-label="Sección">
-    <button class="mode-tab flex-1 py-2.5 rounded-xl text-ink font-extrabold text-[13px] uppercase tracking-wide cursor-pointer transition-all" data-view="empleos" aria-pressed="true">Empleos</button>
-    <button class="mode-tab flex-1 py-2.5 rounded-xl text-ink font-extrabold text-[13px] uppercase tracking-wide cursor-pointer transition-all" data-view="mercaderia" aria-pressed="false">Compra/Venta</button>
-    <button class="mode-tab flex-1 py-2.5 rounded-xl text-ink font-extrabold text-[13px] uppercase tracking-wide cursor-pointer transition-all" data-view="servicios" aria-pressed="false">Servicios</button>
+    <button class="mode-tab flex-1 py-3 rounded-xl text-ink font-extrabold text-[13px] uppercase tracking-wide cursor-pointer transition-all" data-view="empleos" aria-pressed="true">Empleos</button>
+    <button class="mode-tab flex-1 py-3 rounded-xl text-ink font-extrabold text-[13px] uppercase tracking-wide cursor-pointer transition-all" data-view="mercaderia" aria-pressed="false">Compra/Venta</button>
+    <button class="mode-tab flex-1 py-3 rounded-xl text-ink font-extrabold text-[13px] uppercase tracking-wide cursor-pointer transition-all" data-view="servicios" aria-pressed="false">Servicios</button>
   </div>
 </div>
 
 <div id="empleosView">
   <div class="max-w-3xl mx-auto px-4">
     <div class="flex gap-2 overflow-x-auto scrollbar-none py-4" role="tablist" aria-label="Tipo de aviso">
-      <button class="tipo-tab whitespace-nowrap px-4 py-2 rounded-full text-[13px] font-bold border border-transparent bg-stone-100 text-ink cursor-pointer hover:-translate-y-0.5 transition-all" data-tipo="" aria-pressed="true">Todos</button>
-      <button class="tipo-tab whitespace-nowrap px-4 py-2 rounded-full text-[13px] font-bold border border-transparent bg-stone-100 text-ink cursor-pointer hover:-translate-y-0.5 transition-all" data-tipo="ofrezco" aria-pressed="false">Talleres con vacante</button>
-      <button class="tipo-tab whitespace-nowrap px-4 py-2 rounded-full text-[13px] font-bold border border-transparent bg-stone-100 text-ink cursor-pointer hover:-translate-y-0.5 transition-all" data-tipo="busco" aria-pressed="false">Costureros buscando trabajo</button>
+      <button class="tipo-tab whitespace-nowrap px-4 py-2.5 rounded-full text-[13px] font-bold border border-transparent bg-stone-100 text-ink cursor-pointer hover:-translate-y-0.5 transition-all" data-tipo="" aria-pressed="true">Todos</button>
+      <button class="tipo-tab whitespace-nowrap px-4 py-2.5 rounded-full text-[13px] font-bold border border-transparent bg-stone-100 text-ink cursor-pointer hover:-translate-y-0.5 transition-all" data-tipo="ofrezco" aria-pressed="false">Talleres con vacante</button>
+      <button class="tipo-tab whitespace-nowrap px-4 py-2.5 rounded-full text-[13px] font-bold border border-transparent bg-stone-100 text-ink cursor-pointer hover:-translate-y-0.5 transition-all" data-tipo="busco" aria-pressed="false">Costureros buscando trabajo</button>
     </div>
 
     <div class="grid grid-cols-2 gap-2.5 mb-1 sm:[grid-template-columns:1.6fr_1fr_auto] sm:items-center">
-      <input id="searchInput" type="text" placeholder="Buscar (recta, jean, gamarra, operario...)" class="col-span-2 sm:col-auto w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-thread focus-visible:outline-offset-2">
-      <select id="filterZona" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-thread focus-visible:outline-offset-2"><option value="">Toda zona</option></select>
+      <input id="searchInput" type="text" placeholder="Buscar (recta, jean, gamarra, operario...)" aria-label="Buscar avisos de empleo" class="col-span-2 sm:col-auto w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-thread focus-visible:outline-offset-2">
+      <select id="filterZona" aria-label="Filtrar por zona" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-thread focus-visible:outline-offset-2"><option value="">Toda zona</option></select>
       <label class="flex items-center gap-2 text-[14px] font-semibold bg-white border border-stone-200 rounded-full px-3.5 py-2.5 cursor-pointer"><input id="filterUrgente" type="checkbox" class="accent-thread w-4 h-4"> Solo urgentes</label>
     </div>
     <p id="resultCount" class="text-[12px] text-ink-soft mb-3"></p>
@@ -142,14 +142,14 @@
 <div id="mercaderiaView" class="hidden">
   <div class="max-w-3xl mx-auto px-4">
     <div class="flex gap-2 overflow-x-auto scrollbar-none py-4" role="tablist" aria-label="Tipo de publicación">
-      <button class="tipo-tab whitespace-nowrap px-4 py-2 rounded-full text-[13px] font-bold border border-transparent bg-stone-100 text-ink cursor-pointer hover:-translate-y-0.5 transition-all" data-tipo="" aria-pressed="true">Todos</button>
-      <button class="tipo-tab whitespace-nowrap px-4 py-2 rounded-full text-[13px] font-bold border border-transparent bg-stone-100 text-ink cursor-pointer hover:-translate-y-0.5 transition-all" data-tipo="vendo" aria-pressed="false">Vendo mercadería</button>
-      <button class="tipo-tab whitespace-nowrap px-4 py-2 rounded-full text-[13px] font-bold border border-transparent bg-stone-100 text-ink cursor-pointer hover:-translate-y-0.5 transition-all" data-tipo="compro" aria-pressed="false">Busco comprar</button>
+      <button class="tipo-tab whitespace-nowrap px-4 py-2.5 rounded-full text-[13px] font-bold border border-transparent bg-stone-100 text-ink cursor-pointer hover:-translate-y-0.5 transition-all" data-tipo="" aria-pressed="true">Todos</button>
+      <button class="tipo-tab whitespace-nowrap px-4 py-2.5 rounded-full text-[13px] font-bold border border-transparent bg-stone-100 text-ink cursor-pointer hover:-translate-y-0.5 transition-all" data-tipo="vendo" aria-pressed="false">Vendo mercadería</button>
+      <button class="tipo-tab whitespace-nowrap px-4 py-2.5 rounded-full text-[13px] font-bold border border-transparent bg-stone-100 text-ink cursor-pointer hover:-translate-y-0.5 transition-all" data-tipo="compro" aria-pressed="false">Busco comprar</button>
     </div>
 
     <div class="grid grid-cols-2 gap-2.5 mb-1 sm:[grid-template-columns:1.6fr_1fr_auto] sm:items-center">
-      <input id="mercSearchInput" type="text" placeholder="Buscar (polos, jean, mayorista...)" class="col-span-2 sm:col-auto w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-thread focus-visible:outline-offset-2">
-      <select id="mercFilterZona" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-thread focus-visible:outline-offset-2"><option value="">Toda zona</option></select>
+      <input id="mercSearchInput" type="text" placeholder="Buscar (polos, jean, mayorista...)" aria-label="Buscar mercadería" class="col-span-2 sm:col-auto w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-thread focus-visible:outline-offset-2">
+      <select id="mercFilterZona" aria-label="Filtrar por zona" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-thread focus-visible:outline-offset-2"><option value="">Toda zona</option></select>
       <label class="flex items-center gap-2 text-[14px] font-semibold bg-white border border-stone-200 rounded-full px-3.5 py-2.5 cursor-pointer"><input id="mercFilterUrgente" type="checkbox" class="accent-thread w-4 h-4"> Solo urgentes</label>
     </div>
     <p id="mercResultCount" class="text-[12px] text-ink-soft mb-3"></p>
@@ -170,14 +170,14 @@
 <div id="serviciosView" class="hidden">
   <div class="max-w-3xl mx-auto px-4">
     <div class="flex gap-2 overflow-x-auto scrollbar-none py-4" role="tablist" aria-label="Tipo de servicio">
-      <button class="tipo-tab whitespace-nowrap px-4 py-2 rounded-full text-[13px] font-bold border border-transparent bg-stone-100 text-ink cursor-pointer hover:-translate-y-0.5 transition-all" data-tipo="" aria-pressed="true">Todos</button>
-      <button class="tipo-tab whitespace-nowrap px-4 py-2 rounded-full text-[13px] font-bold border border-transparent bg-stone-100 text-ink cursor-pointer hover:-translate-y-0.5 transition-all" data-tipo="ofrezco" aria-pressed="false">Talleres que ofrecen servicio</button>
-      <button class="tipo-tab whitespace-nowrap px-4 py-2 rounded-full text-[13px] font-bold border border-transparent bg-stone-100 text-ink cursor-pointer hover:-translate-y-0.5 transition-all" data-tipo="busco" aria-pressed="false">Buscan taller</button>
+      <button class="tipo-tab whitespace-nowrap px-4 py-2.5 rounded-full text-[13px] font-bold border border-transparent bg-stone-100 text-ink cursor-pointer hover:-translate-y-0.5 transition-all" data-tipo="" aria-pressed="true">Todos</button>
+      <button class="tipo-tab whitespace-nowrap px-4 py-2.5 rounded-full text-[13px] font-bold border border-transparent bg-stone-100 text-ink cursor-pointer hover:-translate-y-0.5 transition-all" data-tipo="ofrezco" aria-pressed="false">Talleres que ofrecen servicio</button>
+      <button class="tipo-tab whitespace-nowrap px-4 py-2.5 rounded-full text-[13px] font-bold border border-transparent bg-stone-100 text-ink cursor-pointer hover:-translate-y-0.5 transition-all" data-tipo="busco" aria-pressed="false">Buscan taller</button>
     </div>
 
     <div class="grid grid-cols-2 gap-2.5 mb-1 sm:[grid-template-columns:1.6fr_1fr_auto] sm:items-center">
-      <input id="servicioSearchInput" type="text" placeholder="Buscar (corte, estampado, bordado...)" class="col-span-2 sm:col-auto w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-thread focus-visible:outline-offset-2">
-      <select id="servicioFilterZona" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-thread focus-visible:outline-offset-2"><option value="">Toda zona</option></select>
+      <input id="servicioSearchInput" type="text" placeholder="Buscar (corte, estampado, bordado...)" aria-label="Buscar servicios" class="col-span-2 sm:col-auto w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 placeholder:text-ink-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-thread focus-visible:outline-offset-2">
+      <select id="servicioFilterZona" aria-label="Filtrar por zona" class="w-full text-[14px] text-ink bg-white border border-stone-200 rounded-2xl px-3.5 py-2.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-thread focus-visible:outline-offset-2"><option value="">Toda zona</option></select>
       <label class="flex items-center gap-2 text-[14px] font-semibold bg-white border border-stone-200 rounded-full px-3.5 py-2.5 cursor-pointer"><input id="servicioFilterUrgente" type="checkbox" class="accent-thread w-4 h-4"> Solo urgentes</label>
     </div>
     <p id="servicioResultCount" class="text-[12px] text-ink-soft mb-3"></p>
@@ -589,7 +589,7 @@
       <button type="button" class="ghost-btn edit-btn flex items-center gap-1 text-[12px] font-semibold bg-transparent border-0 text-ink-soft cursor-pointer px-1.5 py-1 rounded-lg hover:bg-stone-100 hover:text-thread-dark"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg> Editar</button>
       <button type="button" class="ghost-btn delete-btn flex items-center gap-1 text-[12px] font-semibold bg-transparent border-0 text-ink-soft cursor-pointer px-1.5 py-1 rounded-lg hover:bg-stone-100 hover:text-red-600"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg> Eliminar</button>
     </div>
-    <h3 class="contacto-name text-[16px] font-semibold m-0 leading-tight"></h3>
+    <h3 class="contacto-name text-[18px] font-bold m-0 leading-tight"></h3>
     <p class="zona-line flex items-center gap-1.5 text-[13px] text-ink-soft m-0"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg><span></span></p>
     <p class="doc-line flex items-center gap-1 text-[13px] font-bold text-ofrezco m-0"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span></span></p>
     <div class="perfil-chips flex flex-wrap gap-1.5 empty:hidden"></div>
@@ -619,7 +619,7 @@
       <button type="button" class="ghost-btn edit-btn flex items-center gap-1 text-[12px] font-semibold bg-transparent border-0 text-ink-soft cursor-pointer px-1.5 py-1 rounded-lg hover:bg-stone-100 hover:text-thread-dark"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg> Editar</button>
       <button type="button" class="ghost-btn delete-btn flex items-center gap-1 text-[12px] font-semibold bg-transparent border-0 text-ink-soft cursor-pointer px-1.5 py-1 rounded-lg hover:bg-stone-100 hover:text-red-600"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg> Eliminar</button>
     </div>
-    <h3 class="contacto-name text-[16px] font-semibold m-0 leading-tight"></h3>
+    <h3 class="contacto-name text-[18px] font-bold m-0 leading-tight"></h3>
     <p class="zona-line flex items-center gap-1.5 text-[13px] text-ink-soft m-0"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg><span></span></p>
     <p class="doc-line flex items-center gap-1 text-[13px] font-bold text-ofrezco m-0"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span></span></p>
     <div class="item-chips flex flex-wrap gap-1.5 empty:hidden"></div>
@@ -649,7 +649,7 @@
       <button type="button" class="ghost-btn edit-btn flex items-center gap-1 text-[12px] font-semibold bg-transparent border-0 text-ink-soft cursor-pointer px-1.5 py-1 rounded-lg hover:bg-stone-100 hover:text-thread-dark"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg> Editar</button>
       <button type="button" class="ghost-btn delete-btn flex items-center gap-1 text-[12px] font-semibold bg-transparent border-0 text-ink-soft cursor-pointer px-1.5 py-1 rounded-lg hover:bg-stone-100 hover:text-red-600"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg> Eliminar</button>
     </div>
-    <h3 class="contacto-name text-[16px] font-semibold m-0 leading-tight"></h3>
+    <h3 class="contacto-name text-[18px] font-bold m-0 leading-tight"></h3>
     <p class="zona-line flex items-center gap-1.5 text-[13px] text-ink-soft m-0"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg><span></span></p>
     <p class="doc-line flex items-center gap-1 text-[13px] font-bold text-ofrezco m-0"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span></span></p>
     <div class="tipo-servicio-chips flex flex-wrap gap-1.5 empty:hidden"></div>
