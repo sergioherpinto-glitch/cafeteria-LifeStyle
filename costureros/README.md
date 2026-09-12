@@ -71,6 +71,11 @@ y después deja de aparecer en las búsquedas — no se borra, solo se oculta
 (`vence` en la base es una fecha, no un borrado). Imita lo que ya pasa en los
 carteles físicos: casi siempre se resuelve en los primeros días.
 
+El precio es **S/10** para destacar el aviso (aparece primero) o extenderlo
+7 días más — ese monto ya aparece escrito en el mensaje de cada formulario,
+justo antes del botón de publicar. Si en algún momento cambias el precio,
+también hay que actualizar el texto en `index.html` (busca "Yapea").
+
 Cuando alguien yapea para destacar o extender su aviso, te comparte el
 comprobante por WhatsApp al mismo número de Yape (el botón del formulario ya
 le abre WhatsApp con un mensaje que incluye su nombre y su propio WhatsApp).

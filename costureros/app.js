@@ -553,6 +553,7 @@ function render() {
     article.dataset.id = listing.id;
 
     node.querySelector('.owner-actions').classList.toggle('hidden', !mineIds.includes(listing.id));
+    renderOwnerYape(node, listing);
     renderCardPhotos(node, listing.fotos);
 
     const tipoBadge = node.querySelector('.tipo-badge');
@@ -687,6 +688,21 @@ function confirmYapePayment(contactoInputId, whatsappInputId) {
   const whatsapp = document.getElementById(whatsappInputId).value.trim();
   const msg = `Hola, ya yapeé para destacar/extender mi aviso${contacto ? ` ("${contacto}")` : ''}. Mi WhatsApp: ${whatsapp}. Te comparto el comprobante.`;
   window.open(`https://wa.me/51${YAPE_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+// Mismo aviso de "yapea para destacar/extender" que aparece en el formulario,
+// pero para un aviso ya publicado (se muestra en la propia tarjeta del dueño,
+// junto a Editar/Eliminar).
+function yapeUpsellLink(listing) {
+  const msg = `Hola, quiero destacar/extender mi aviso ("${listing.contacto}"). Mi WhatsApp: ${listing.whatsapp}. Te comparto el comprobante.`;
+  return `https://wa.me/51${YAPE_NUMBER}?text=${encodeURIComponent(msg)}`;
+}
+
+function renderOwnerYape(node, listing) {
+  const ownerYape = node.querySelector('.owner-yape');
+  const isMine = mineIds.includes(listing.id);
+  ownerYape.classList.toggle('hidden', !isMine);
+  if (isMine) ownerYape.querySelector('a').href = yapeUpsellLink(listing);
 }
 
 async function deleteListing(id) {
@@ -875,6 +891,7 @@ function mercRender() {
     article.dataset.id = listing.id;
 
     node.querySelector('.owner-actions').classList.toggle('hidden', !mineIds.includes(listing.id));
+    renderOwnerYape(node, listing);
 
     renderCardPhotos(node, listing.fotos || (listing.foto ? [listing.foto] : []));
 
@@ -1156,6 +1173,7 @@ function servicioRender() {
     article.dataset.id = listing.id;
 
     node.querySelector('.owner-actions').classList.toggle('hidden', !mineIds.includes(listing.id));
+    renderOwnerYape(node, listing);
     renderCardPhotos(node, listing.fotos);
 
     const tipoBadge = node.querySelector('.tipo-badge');
