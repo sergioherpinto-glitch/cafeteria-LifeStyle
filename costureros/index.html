@@ -37,8 +37,8 @@
   .card:hover{ @apply -translate-y-1 shadow-xl; }
   .card:has(.badge-ofrezco){ @apply bg-gradient-to-b from-ofrezco-wash to-white; border-left-color:#1e7d3c; }
   .card:has(.badge-busca){ @apply bg-gradient-to-b from-busca-wash to-white; border-left-color:#2b4fc9; }
-  .card-urgente{ @apply ring-2 ring-urgente ring-inset; }
-  .card-destacado{ @apply bg-gradient-to-b from-accent-soft to-white ring-2 ring-accent ring-inset; border-left-color:#5b6e23; border-left-width:7px; box-shadow:0 14px 30px -12px rgba(91,110,35,.45); }
+  .card.card-urgente{ @apply ring-2 ring-urgente ring-inset; }
+  .card.card-destacado{ @apply bg-gradient-to-b from-accent-soft to-white ring-2 ring-accent ring-inset; border-left-color:#5b6e23; border-left-width:7px; box-shadow:0 14px 30px -12px rgba(91,110,35,.45); }
   @media (prefers-reduced-motion:reduce){ .card{ @apply transition-none; } .card:hover{ @apply translate-y-0; } }
 
   .card-photos img{ @apply w-20 h-20 object-cover rounded-2xl shrink-0 bg-stone-100; }
