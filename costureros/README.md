@@ -77,31 +77,61 @@ justo antes del botón de publicar. Si en algún momento cambias el precio,
 también hay que actualizar el texto en `index.html` (busca "Yapea").
 
 Cuando alguien yapea para destacar o extender su aviso, te comparte el
-comprobante por WhatsApp al mismo número de Yape (el botón del formulario ya
-le abre WhatsApp con un mensaje que incluye su nombre y su propio WhatsApp).
-Confirmas el pago y luego marcas el aviso pegando esto en el SQL Editor de
-Supabase (reemplaza el número de WhatsApp por el de esa persona):
+comprobante por WhatsApp al mismo número de Yape (el botón del formulario, o
+el recordatorio chiquito que aparece al final de su propia tarjeta ya
+publicada, ya le abren WhatsApp con un mensaje que incluye su nombre y su
+propio WhatsApp). Confirmas el pago y luego marcas **su aviso más reciente**
+pegando esto en el SQL Editor de Supabase (reemplaza el número de WhatsApp
+por el de esa persona — corre solo la de la sección que corresponda):
 
 ```sql
 update empleos set destacado = true,
   vence = (extract(epoch from now())*1000)::bigint + 7*24*60*60*1000
-where whatsapp = '999999999';
+where id = (select id from empleos where whatsapp = '999999999' order by fecha desc limit 1);
 
 update mercaderia set destacado = true,
   vence = (extract(epoch from now())*1000)::bigint + 7*24*60*60*1000
-where whatsapp = '999999999';
+where id = (select id from mercaderia where whatsapp = '999999999' order by fecha desc limit 1);
 
 update servicios set destacado = true,
   vence = (extract(epoch from now())*1000)::bigint + 7*24*60*60*1000
-where whatsapp = '999999999';
+where id = (select id from servicios where whatsapp = '999999999' order by fecha desc limit 1);
 ```
 
 (Si alguien paga por más tiempo, por ejemplo dos semanas, cambia el `7` por
 `14` en ese `UPDATE` — el precio de esa opción lo decides tú.)
 
-(Las tablas donde no exista esa fila simplemente no hacen nada — no pasa nada
-por correr las tres.) Un aviso "destacado" aparece primero en la lista y con
-una insignia ★ Destacado.
+(Las secciones donde no exista ningún aviso de ese WhatsApp simplemente no
+hacen nada — no pasa nada por correr las tres.) Un aviso "destacado" aparece
+primero en la lista y con una insignia ★ Destacado.
+
+### Límite de un aviso gratis por WhatsApp (evita el abuso del gratis)
+
+Sin ningún límite, una misma persona podría publicar avisos gratis sin fin, o
+esperar a que se le acaben sus 7 días gratis, borrar el aviso y volver a
+crearlo — sin pagar nunca. Para evitarlo, la base de datos (no el navegador,
+así que no se puede saltar editando la página) lleva la cuenta de qué números
+de WhatsApp ya usaron su aviso gratis en cada sección — Empleos, Compra/Venta
+y Servicios cuentan por separado. **La primera vez** que un WhatsApp publica
+algo nuevo en una sección, sale gratis 7 días como siempre. **La segunda vez**
+(así el aviso anterior ya no exista, se haya borrado o haya expirado), el
+aviso nuevo se guarda pero llega ya "vencido" — oculto para todo el mundo
+menos para quien lo publicó, que sí lo ve en su celular con una insignia
+"Vencido" y el mismo recordatorio para pagar. Cuando confirmas su pago con el
+`UPDATE` de arriba, el aviso pasa a verse normal para todos.
+
+Esto vive en `supabase/migration_005_limite_avisos_gratis.sql` (una tabla
+`avisos_gratis_usados`, que nunca se borra aunque el aviso sí, más un trigger
+en las tres tablas que decide el `vence`/`destacado` de cada aviso nuevo).
+
+Una limitación a tener en cuenta: si un mismo taller quisiera publicar dos
+vacantes distintas el mismo día (por ejemplo "busco operario de recta" y
+"busco cortador" por separado), la segunda también contaría como su "segundo
+aviso" y llegaría vencida — el sistema no distingue eso de alguien
+republicando lo mismo para no pagar, porque no hay forma de saber la
+diferencia sin cuentas de usuario reales. Si esto te genera problemas en la
+práctica, avísame y ajustamos la regla (por ejemplo, permitir 2 gratis en vez
+de 1 antes de empezar a cobrar).
 
 ## DNI / RUC (confianza)
 
@@ -128,7 +158,9 @@ autodeclarado, sirve como filtro social liviano, no como garantía.
   "modalidad de pago" de una sola opción a varias (correr una sola vez).
 - `supabase/migration_004_servicios.sql` — agrega la tabla `servicios` a una
   base ya creada (correr una sola vez).
-- `supabase/ponte_al_dia.sql` — revisa qué falta de las tres migraciones
+- `supabase/migration_005_limite_avisos_gratis.sql` — agrega el límite de un
+  aviso gratis por WhatsApp por sección (correr una sola vez).
+- `supabase/ponte_al_dia.sql` — revisa qué falta de las migraciones
   anteriores y lo agrega, sin duplicar lo que ya esté hecho. Si no estás
   seguro de qué corriste antes, corre este archivo — es seguro correrlo las
   veces que sea.

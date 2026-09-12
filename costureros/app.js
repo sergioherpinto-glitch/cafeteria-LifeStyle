@@ -182,16 +182,16 @@ async function fetchMercListings() {
 
 async function saveListing(listing) {
   if (!db) return { ok: false, message: 'La base de datos no está disponible (Supabase no cargó).' };
-  const { error } = await db.from('empleos').upsert(empleoToDb(listing));
+  const { data, error } = await db.from('empleos').upsert(empleoToDb(listing)).select();
   if (error) console.error(error);
-  return { ok: !error, message: error ? error.message : null };
+  return { ok: !error, message: error ? error.message : null, saved: data && data[0] ? empleoFromDb(data[0]) : null };
 }
 
 async function saveMercListing(listing) {
   if (!db) return { ok: false, message: 'La base de datos no está disponible (Supabase no cargó).' };
-  const { error } = await db.from('mercaderia').upsert(mercToDb(listing));
+  const { data, error } = await db.from('mercaderia').upsert(mercToDb(listing)).select();
   if (error) console.error(error);
-  return { ok: !error, message: error ? error.message : null };
+  return { ok: !error, message: error ? error.message : null, saved: data && data[0] ? mercFromDb(data[0]) : null };
 }
 
 async function removeListing(id) {
@@ -217,9 +217,9 @@ async function fetchServicios() {
 
 async function saveServicio(listing) {
   if (!db) return { ok: false, message: 'La base de datos no está disponible (Supabase no cargó).' };
-  const { error } = await db.from('servicios').upsert(servicioToDb(listing));
+  const { data, error } = await db.from('servicios').upsert(servicioToDb(listing)).select();
   if (error) console.error(error);
-  return { ok: !error, message: error ? error.message : null };
+  return { ok: !error, message: error ? error.message : null, saved: data && data[0] ? servicioFromDb(data[0]) : null };
 }
 
 async function removeServicio(id) {
@@ -515,7 +515,7 @@ function matchesFilters(listing) {
   const zona = document.getElementById('filterZona').value;
   const soloUrgente = document.getElementById('filterUrgente').checked;
 
-  if (listing.vence && listing.vence < Date.now()) return false;
+  if (listing.vence && listing.vence < Date.now() && !mineIds.includes(listing.id)) return false;
   if (activeTipo && listing.tipo !== activeTipo) return false;
   if (zona && listing.zona !== zona && !(listing.zonasTrabajo || []).includes(zona)) return false;
   if (soloUrgente && !listing.urgente) return false;
@@ -562,6 +562,7 @@ function render() {
 
     node.querySelector('.urgente-badge').classList.toggle('hidden', !listing.urgente);
     node.querySelector('.destacado-badge').classList.toggle('hidden', !listing.destacado);
+    node.querySelector('.vencido-badge').classList.toggle('hidden', !(listing.vence && listing.vence < Date.now()));
     node.querySelector('.contacto-name').textContent = listing.contacto;
     node.querySelector('.zona-line span').textContent = listing.tipo === 'busco'
       ? `Vive en ${listing.zona} · ${timeAgo(listing.fecha)}`
@@ -698,6 +699,18 @@ function yapeUpsellLink(listing) {
   return `https://wa.me/51${YAPE_NUMBER}?text=${encodeURIComponent(msg)}`;
 }
 
+// La base de datos (no el navegador) decide si un aviso nuevo arranca gratis o
+// no: cada WhatsApp tiene un solo aviso gratis de por vida en cada sección —
+// aunque lo borre y lo vuelva a crear — para que no sea gratis publicar sin
+// límite. Si ya lo usó, el aviso se guarda pero llega "vencido" (oculto) hasta
+// que pague. Avisamos aquí mismo, apenas se publica, para que no se quede
+// esperando sin saber por qué no aparece.
+function warnIfFreeQuotaUsed(seccionLabel, saved) {
+  if (!saved || !saved.vence || saved.vence >= Date.now()) return;
+  alert(`Tu aviso se guardó, pero ya habías usado tu publicación gratis de ${seccionLabel} antes (aunque la hayas borrado) — así que este no va a aparecer en las búsquedas hasta que confirmes tu pago de S/10. Te abrimos WhatsApp para que nos avises.`);
+  window.open(yapeUpsellLink(saved), '_blank');
+}
+
 function renderOwnerYape(node, listing) {
   const ownerYape = node.querySelector('.owner-yape');
   const isMine = mineIds.includes(listing.id);
@@ -811,9 +824,10 @@ function initEmpleosForm() {
       const idx = listings.findIndex(l => l.id === editingId);
       if (idx !== -1) listings[idx] = listingToSave;
     } else {
-      listings.unshift(listingToSave);
+      listings.unshift(result.saved || listingToSave);
       mineIds.push(newId);
       saveMineIds();
+      warnIfFreeQuotaUsed('Empleos', result.saved);
     }
     closeModal();
     render();
@@ -855,7 +869,7 @@ function matchesMercFilters(listing) {
   const zona = document.getElementById('mercFilterZona').value;
   const soloUrgente = document.getElementById('mercFilterUrgente').checked;
 
-  if (listing.vence && listing.vence < Date.now()) return false;
+  if (listing.vence && listing.vence < Date.now() && !mineIds.includes(listing.id)) return false;
   if (activeMercTipo && listing.tipo !== activeMercTipo) return false;
   if (zona && listing.zona !== zona) return false;
   if (soloUrgente && !listing.urgente) return false;
@@ -901,6 +915,7 @@ function mercRender() {
 
     node.querySelector('.urgente-badge').classList.toggle('hidden', !listing.urgente);
     node.querySelector('.destacado-badge').classList.toggle('hidden', !listing.destacado);
+    node.querySelector('.vencido-badge').classList.toggle('hidden', !(listing.vence && listing.vence < Date.now()));
     node.querySelector('.contacto-name').textContent = listing.contacto;
     node.querySelector('.zona-line span').textContent = `${listing.zona} · ${timeAgo(listing.fecha)}`;
     renderDocLine(node, listing);
@@ -1093,9 +1108,10 @@ function initMercForm() {
       const idx = mercListings.findIndex(l => l.id === mercEditingId);
       if (idx !== -1) mercListings[idx] = listingToSave;
     } else {
-      mercListings.unshift(listingToSave);
+      mercListings.unshift(result.saved || listingToSave);
       mineIds.push(newId);
       saveMineIds();
+      warnIfFreeQuotaUsed('Compra/Venta', result.saved);
     }
     closeMercModal();
     mercRender();
@@ -1137,7 +1153,7 @@ function matchesServicioFilters(listing) {
   const zona = document.getElementById('servicioFilterZona').value;
   const soloUrgente = document.getElementById('servicioFilterUrgente').checked;
 
-  if (listing.vence && listing.vence < Date.now()) return false;
+  if (listing.vence && listing.vence < Date.now() && !mineIds.includes(listing.id)) return false;
   if (activeServicioTipo && listing.tipo !== activeServicioTipo) return false;
   if (zona && listing.zona !== zona) return false;
   if (soloUrgente && !listing.urgente) return false;
@@ -1182,6 +1198,7 @@ function servicioRender() {
 
     node.querySelector('.urgente-badge').classList.toggle('hidden', !listing.urgente);
     node.querySelector('.destacado-badge').classList.toggle('hidden', !listing.destacado);
+    node.querySelector('.vencido-badge').classList.toggle('hidden', !(listing.vence && listing.vence < Date.now()));
     node.querySelector('.contacto-name').textContent = listing.contacto;
     node.querySelector('.zona-line span').textContent = `${listing.zona} · ${timeAgo(listing.fecha)}`;
     renderDocLine(node, listing);
@@ -1337,9 +1354,10 @@ function initServicioForm() {
       const idx = servicioListings.findIndex(l => l.id === servicioEditingId);
       if (idx !== -1) servicioListings[idx] = listingToSave;
     } else {
-      servicioListings.unshift(listingToSave);
+      servicioListings.unshift(result.saved || listingToSave);
       mineIds.push(newId);
       saveMineIds();
+      warnIfFreeQuotaUsed('Servicios', result.saved);
     }
     closeServicioModal();
     servicioRender();

@@ -91,6 +91,62 @@ create policy "mercaderia: acceso público total" on mercaderia
 create policy "servicios: acceso público total" on servicios
   for all using (true) with check (true);
 
+-- Límite de "un aviso gratis por WhatsApp, por sección, de por vida": sin
+-- esto, una misma persona podría publicar avisos ilimitados gratis, o borrar
+-- su aviso cada 7 días y volver a crearlo para nunca pagar. La tabla
+-- avisos_gratis_usados nunca se borra (aunque el aviso sí se borre), así que
+-- el límite no se puede saltar re-publicando. Ver migration_005 para más
+-- detalle de cómo funciona.
+create table if not exists avisos_gratis_usados (
+  whatsapp text not null,
+  seccion text not null,
+  primera_vez bigint not null,
+  primary key (whatsapp, seccion)
+);
+alter table avisos_gratis_usados enable row level security;
+-- Sin políticas a propósito: solo la usa la función de abajo (security definer).
+
+create or replace function fn_check_aviso_gratis() returns trigger
+security definer set search_path = public
+language plpgsql as $$
+declare
+  ya_existe_id boolean;
+  ya_uso_gratis boolean;
+begin
+  execute format('select exists(select 1 from %I where id = $1)', TG_TABLE_NAME)
+    into ya_existe_id using NEW.id;
+
+  if ya_existe_id then
+    return NEW; -- es una edición de un aviso propio que ya existía: no tocar nada
+  end if;
+
+  NEW.destacado := false;
+
+  select exists(
+    select 1 from avisos_gratis_usados
+    where whatsapp = NEW.whatsapp and seccion = TG_TABLE_NAME
+  ) into ya_uso_gratis;
+
+  if not ya_uso_gratis then
+    insert into avisos_gratis_usados (whatsapp, seccion, primera_vez)
+    values (NEW.whatsapp, TG_TABLE_NAME, (extract(epoch from now())*1000)::bigint)
+    on conflict (whatsapp, seccion) do nothing;
+    NEW.vence := (extract(epoch from now())*1000)::bigint + 7*24*60*60*1000;
+  else
+    NEW.vence := (extract(epoch from now())*1000)::bigint - 1;
+  end if;
+
+  return NEW;
+end;
+$$;
+
+create trigger trg_empleos_gratis before insert on empleos
+  for each row execute function fn_check_aviso_gratis();
+create trigger trg_mercaderia_gratis before insert on mercaderia
+  for each row execute function fn_check_aviso_gratis();
+create trigger trg_servicios_gratis before insert on servicios
+  for each row execute function fn_check_aviso_gratis();
+
 -- Datos de ejemplo (los mismos avisos ficticios que ya tenía la demo).
 insert into empleos (id, tipo, perfiles, prendas, telas, experiencia, maquinas, operaciones, labor_manual, tamano_taller, modalidad_pago, pago, disponibilidad, zona, zonas_trabajo, contacto, whatsapp, descripcion, urgente, documento, documento_tipo, fecha) values
 ('l-seed-0', 'ofrezco', '["Operario(a) de máquina"]', '["Polos/Camisetas"]', '["Tela punto (polos, buzos)"]', '1 a 3 años', '["Recta","Remalle"]', '["Cerrado de costado","Pegado de manga"]', '[]', 'Taller mediano', '["Jornal (sueldo semanal)"]', 'S/1300 + beneficios', '["Tiempo completo (L-S)"]', 'Santa Anita', '[]', 'Taller Mayorazgo Chico', '977000001', 'Experiencia en recta plana y remalle para polos en tela punto.', true, '20601234567', 'RUC', (extract(epoch from now())*1000)::bigint - 10800000),
