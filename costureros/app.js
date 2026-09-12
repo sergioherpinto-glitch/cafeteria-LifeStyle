@@ -157,31 +157,31 @@ async function fetchMercListings() {
 }
 
 async function saveListing(listing) {
-  if (!db) return false;
+  if (!db) return { ok: false, message: 'La base de datos no está disponible (Supabase no cargó).' };
   const { error } = await db.from('empleos').upsert(empleoToDb(listing));
   if (error) console.error(error);
-  return !error;
+  return { ok: !error, message: error ? error.message : null };
 }
 
 async function saveMercListing(listing) {
-  if (!db) return false;
+  if (!db) return { ok: false, message: 'La base de datos no está disponible (Supabase no cargó).' };
   const { error } = await db.from('mercaderia').upsert(mercToDb(listing));
   if (error) console.error(error);
-  return !error;
+  return { ok: !error, message: error ? error.message : null };
 }
 
 async function removeListing(id) {
-  if (!db) return false;
+  if (!db) return { ok: false, message: 'La base de datos no está disponible (Supabase no cargó).' };
   const { error } = await db.from('empleos').delete().eq('id', id);
   if (error) console.error(error);
-  return !error;
+  return { ok: !error, message: error ? error.message : null };
 }
 
 async function removeMercListing(id) {
-  if (!db) return false;
+  if (!db) return { ok: false, message: 'La base de datos no está disponible (Supabase no cargó).' };
   const { error } = await db.from('mercaderia').delete().eq('id', id);
   if (error) console.error(error);
-  return !error;
+  return { ok: !error, message: error ? error.message : null };
 }
 
 // Reduce el archivo a una sola imagen liviana (comprimida) para que quepa cómodamente
@@ -646,8 +646,8 @@ function confirmYapePayment(contactoInputId, whatsappInputId) {
 
 async function deleteListing(id) {
   if (!confirm('¿Seguro que quieres eliminar este aviso?')) return;
-  const ok = await removeListing(id);
-  if (!ok) { alert('No se pudo eliminar. Revisa tu conexión e intenta de nuevo.'); return; }
+  const result = await removeListing(id);
+  if (!result.ok) { alert('No se pudo eliminar.' + (result.message ? `\n\nDetalle: ${result.message}` : ' Revisa tu conexión e intenta de nuevo.')); return; }
   listings = listings.filter(l => l.id !== id);
   mineIds = mineIds.filter(i => i !== id);
   saveMineIds();
@@ -740,10 +740,10 @@ function initEmpleosForm() {
 
     const submitBtn = document.getElementById('submitBtn');
     submitBtn.disabled = true;
-    const ok = await saveListing(listingToSave);
+    const result = await saveListing(listingToSave);
     submitBtn.disabled = false;
-    if (!ok) {
-      alert('No se pudo guardar. Revisa tu conexión a internet e intenta de nuevo.');
+    if (!result.ok) {
+      alert('No se pudo guardar.' + (result.message ? `\n\nDetalle: ${result.message}` : ' Revisa tu conexión a internet e intenta de nuevo.'));
       return;
     }
     if (editingId) {
@@ -936,8 +936,8 @@ function openMercModalForEdit(listing) {
 
 async function deleteMercListing(id) {
   if (!confirm('¿Seguro que quieres eliminar esta publicación?')) return;
-  const ok = await removeMercListing(id);
-  if (!ok) { alert('No se pudo eliminar. Revisa tu conexión e intenta de nuevo.'); return; }
+  const result = await removeMercListing(id);
+  if (!result.ok) { alert('No se pudo eliminar.' + (result.message ? `\n\nDetalle: ${result.message}` : ' Revisa tu conexión e intenta de nuevo.')); return; }
   mercListings = mercListings.filter(l => l.id !== id);
   mineIds = mineIds.filter(i => i !== id);
   saveMineIds();
@@ -1021,10 +1021,10 @@ function initMercForm() {
 
     const mercSubmitBtn = document.getElementById('mercSubmitBtn');
     mercSubmitBtn.disabled = true;
-    const ok = await saveMercListing(listingToSave);
+    const result = await saveMercListing(listingToSave);
     mercSubmitBtn.disabled = false;
-    if (!ok) {
-      alert('No se pudo guardar. Revisa tu conexión a internet e intenta de nuevo.');
+    if (!result.ok) {
+      alert('No se pudo guardar.' + (result.message ? `\n\nDetalle: ${result.message}` : ' Revisa tu conexión a internet e intenta de nuevo.'));
       return;
     }
     if (mercEditingId) {
