@@ -1,9 +1,54 @@
-// Directorio de costureros y talleres — datos guardados en localStorage (demo local).
+// Directorio de costureros y talleres — avisos guardados en Supabase (compartidos
+// entre todos los que entren a la página). Solo "qué avisos son míos" (para poder
+// editarlos/eliminarlos) sigue guardado en este navegador, porque todavía no hay
+// cuentas de usuario — ver README.
 // Dos secciones independientes: Empleos (avisos de trabajo) y Mercadería (compra/venta).
 
-const STORAGE_KEY = 'costureros_listings_v2';
-const MERC_STORAGE_KEY = 'costureros_mercaderia_v1';
 const MINE_KEY = 'costureros_mine_v2';
+
+const SUPABASE_URL = 'https://tsrxtnktgomvewmamiic.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_y97QpXVh59ptU2hY_5CGxw_6PyPYSyf';
+const db = (typeof supabase !== 'undefined') ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+function empleoToDb(l) {
+  return {
+    id: l.id, tipo: l.tipo, perfiles: l.perfiles, prendas: l.prendas, telas: l.telas,
+    experiencia: l.experiencia, maquinas: l.maquinas, operaciones: l.operaciones,
+    labor_manual: l.laborManual, tamano_taller: l.tamanoTaller, modalidad_pago: l.modalidadPago,
+    pago: l.pago, disponibilidad: l.disponibilidad, zona: l.zona, zonas_trabajo: l.zonasTrabajo || [],
+    contacto: l.contacto, whatsapp: l.whatsapp, descripcion: l.descripcion, urgente: l.urgente,
+    documento: l.documento || null, documento_tipo: l.documentoTipo || null, fotos: l.fotos || [],
+    fecha: l.fecha,
+  };
+}
+function empleoFromDb(r) {
+  return {
+    id: r.id, tipo: r.tipo, perfiles: r.perfiles, prendas: r.prendas, telas: r.telas,
+    experiencia: r.experiencia, maquinas: r.maquinas, operaciones: r.operaciones,
+    laborManual: r.labor_manual, tamanoTaller: r.tamano_taller, modalidadPago: r.modalidad_pago,
+    pago: r.pago, disponibilidad: r.disponibilidad, zona: r.zona, zonasTrabajo: r.zonas_trabajo,
+    contacto: r.contacto, whatsapp: r.whatsapp, descripcion: r.descripcion, urgente: r.urgente,
+    documento: r.documento, documentoTipo: r.documento_tipo, fotos: r.fotos, fecha: r.fecha,
+  };
+}
+function mercToDb(l) {
+  return {
+    id: l.id, tipo: l.tipo, items: l.items, tallas: l.tallas, colores: l.colores,
+    cantidad: l.cantidad, venta_tipo: l.ventaTipo, modalidad_venta: l.modalidadVenta,
+    precio_mayor: l.precioMayor, precio_menor: l.precioMenor, zona: l.zona, contacto: l.contacto,
+    whatsapp: l.whatsapp, descripcion: l.descripcion, urgente: l.urgente, fotos: l.fotos || [],
+    documento: l.documento || null, documento_tipo: l.documentoTipo || null, fecha: l.fecha,
+  };
+}
+function mercFromDb(r) {
+  return {
+    id: r.id, tipo: r.tipo, items: r.items, tallas: r.tallas, colores: r.colores,
+    cantidad: r.cantidad, ventaTipo: r.venta_tipo, modalidadVenta: r.modalidad_venta,
+    precioMayor: r.precio_mayor, precioMenor: r.precio_menor, zona: r.zona, contacto: r.contacto,
+    whatsapp: r.whatsapp, descripcion: r.descripcion, urgente: r.urgente, fotos: r.fotos,
+    documento: r.documento, documentoTipo: r.documento_tipo, fecha: r.fecha,
+  };
+}
 
 // A este correo llegan los reportes y las confirmaciones de pago. No usamos
 // WhatsApp aquí a propósito: así el número personal de Sergio no queda
@@ -73,108 +118,11 @@ const MERC_ZONAS = [
   'Provincia - Sierra', 'Provincia - Costa', 'Provincia - Selva', 'Todo el Perú (envío nacional)', 'Otro'
 ];
 
-const SEED_DATA = [
-  {
-    tipo: 'ofrezco', perfiles: ['Operario(a) de máquina'],
-    prendas: ['Polos/Camisetas'], telas: ['Tela punto (polos, buzos)'], experiencia: '1 a 3 años',
-    maquinas: ['Recta', 'Remalle'], operaciones: ['Cerrado de costado', 'Pegado de manga'], laborManual: [],
-    tamanoTaller: 'Taller mediano', modalidadPago: 'Jornal (sueldo semanal)', pago: 'S/1300 + beneficios',
-    disponibilidad: ['Tiempo completo (L-S)'],
-    zona: 'Santa Anita', contacto: 'Taller Mayorazgo Chico', whatsapp: '977000001',
-    descripcion: 'Experiencia en recta plana y remalle para polos en tela punto.', urgente: true,
-    documento: '20601234567', documentoTipo: 'RUC',
-    fecha: Date.now() - 1000 * 60 * 60 * 3,
-  },
-  {
-    tipo: 'ofrezco', perfiles: ['Manual de costura'],
-    prendas: ['Uniformes'], telas: ['Tela plana'], experiencia: 'Sin experiencia, con ganas de aprender',
-    maquinas: [], operaciones: [], laborManual: ['Habilitado', 'Acabados'],
-    tamanoTaller: 'Taller mediano', modalidadPago: 'Destajo por operación', pago: 'A tratar',
-    disponibilidad: ['Tiempo completo (L-S)'],
-    zona: 'Santa Anita', contacto: 'Clínica Municipal - Taller', whatsapp: '955000002',
-    descripcion: 'También se necesita ayudante de línea, de 18 a 28 años. Se enseña.', urgente: true,
-    fecha: Date.now() - 1000 * 60 * 60 * 5,
-  },
-  {
-    tipo: 'ofrezco', perfiles: ['Operario(a) de máquina'],
-    prendas: ['Ropa deportiva', 'Polos/Camisetas'], telas: ['Tela punto (polos, buzos)', 'Tejido grueso'], experiencia: 'Sin experiencia',
-    maquinas: ['Recta', 'Remalle', 'Recubridora'], operaciones: [], laborManual: [],
-    tamanoTaller: 'Taller grande / Fábrica', modalidadPago: 'A tratar', pago: 'Con o sin experiencia',
-    disponibilidad: [],
-    zona: 'Santa Anita', contacto: 'Taller Botica Carrión', whatsapp: '926000003',
-    descripcion: 'Manuales de costura, con o sin experiencia.', urgente: false,
-    fecha: Date.now() - 1000 * 60 * 60 * 20,
-  },
-  {
-    tipo: 'ofrezco', perfiles: ['Operario(a) de máquina'],
-    prendas: ['Camisas'], telas: ['Tela plana'], experiencia: '3 a 5 años',
-    maquinas: ['Recta', 'Remalle'], operaciones: ['Armado completo'], laborManual: [],
-    tamanoTaller: 'Taller mediano', modalidadPago: 'Destajo por prenda (armado completo)', pago: 'Buen sueldo',
-    disponibilidad: ['Tiempo completo (L-S)'],
-    zona: 'Ate', contacto: 'Confecciones Javier Prado', whatsapp: '977000004',
-    descripcion: 'Zona Prolongación Javier Prado, costado del estadio de la U.', urgente: false,
-    fecha: Date.now() - 1000 * 60 * 60 * 30,
-  },
-  {
-    tipo: 'busco', perfiles: ['Operario(a) de máquina'],
-    prendas: ['Polos/Camisetas', 'Ropa deportiva'], telas: ['Tela punto (polos, buzos)'], experiencia: 'Más de 5 años',
-    maquinas: ['Recta', 'Remalle', 'Recubridora'], operaciones: ['Cerrado de costado', 'Pegado de manga'], laborManual: [],
-    tamanoTaller: '', modalidadPago: 'Destajo por operación', pago: '',
-    disponibilidad: ['Medio tiempo / días específicos'],
-    zona: 'Ate', zonasTrabajo: ['Santa Anita', 'Vitarte', 'Gamarra'], contacto: 'Rosa M.', whatsapp: '944000005',
-    descripcion: 'Trabajé en talleres de Santa Anita, Vitarte y en Gamarra. Solo trabajo lunes a miércoles.', urgente: false,
-    documento: '45678912', documentoTipo: 'DNI',
-    fecha: Date.now() - 1000 * 60 * 60 * 8,
-  },
-  {
-    tipo: 'busco', perfiles: ['Cortador(a)'],
-    prendas: ['Pantalones/Jeans'], telas: ['Denim/Jean'], experiencia: '3 a 5 años',
-    maquinas: [], operaciones: [], laborManual: [],
-    tamanoTaller: '', modalidadPago: 'Pago por días trabajados', pago: '',
-    disponibilidad: ['Fines de semana', 'Turno noche'],
-    zona: 'San Juan de Lurigancho', contacto: 'Jhon P.', whatsapp: '999000006',
-    descripcion: 'Busco taller estable, experiencia en corte y confección. Disponible fines de semana o de noche.', urgente: false,
-    fecha: Date.now() - 1000 * 60 * 60 * 50,
-  },
-  {
-    tipo: 'busco', perfiles: ['Vendedor(a)'],
-    prendas: ['Ropa deportiva', 'Casacas'], telas: [], experiencia: '3 a 5 años',
-    maquinas: [], operaciones: [], laborManual: [],
-    tamanoTaller: '', modalidadPago: 'Jornal (sueldo semanal)', pago: '',
-    disponibilidad: ['Fines de semana'],
-    zona: 'Gamarra', contacto: 'Milagros T.', whatsapp: '933000007',
-    descripcion: 'Experiencia vendiendo ropa deportiva de marca en Gamarra, buen trato al cliente.', urgente: false,
-    fecha: Date.now() - 1000 * 60 * 60 * 40,
-  },
-];
+// Los avisos de ejemplo ahora viven directamente en Supabase (ver
+// supabase/schema.sql) — no hace falta duplicarlos aquí como antes.
 
-const MERC_SEED_DATA = [
-  {
-    tipo: 'vendo', items: ['Chompas/Tejido'], tallas: ['S', 'M', 'L', 'XL'], colores: ['Multicolor/Varios colores'],
-    cantidad: '200 unidades', ventaTipo: 'Mayor y menor', modalidadVenta: ['Recojo en tienda/domicilio', 'Envío a nivel nacional'],
-    precioMayor: 'S/25 por unidad', precioMenor: 'S/35 por unidad', zona: 'Gamarra', contacto: 'Manuel R.', whatsapp: '911000001',
-    descripcion: 'Chompas de tejido grueso, varios colores. Mando fotos y video por WhatsApp.',
-    documento: '20601987654', documentoTipo: 'RUC',
-    urgente: false, fecha: Date.now() - 1000 * 60 * 60 * 10,
-  },
-  {
-    tipo: 'compro', items: ['Ropa deportiva'], tallas: [], colores: [],
-    cantidad: '1000 unidades', ventaTipo: 'Por mayor', modalidadVenta: [],
-    precioMayor: '', precioMenor: '', zona: 'Cercado de Lima', contacto: 'Distribuidora Andina', whatsapp: '922000002',
-    descripcion: 'Mayorista busca proveedor constante de ropa deportiva.', urgente: false,
-    fecha: Date.now() - 1000 * 60 * 60 * 15,
-  },
-  {
-    tipo: 'vendo', items: ['Chompas/Tejido'], tallas: ['Talla única/estándar'], colores: ['Multicolor/Varios colores'],
-    cantidad: '500 unidades', ventaTipo: 'Por mayor', modalidadVenta: ['Contra entrega', 'Envío de muestra primero'],
-    precioMayor: 'A tratar según cantidad', precioMenor: '', zona: 'Provincia - Sierra', contacto: 'Confecciones Rivera', whatsapp: '944556677',
-    descripcion: 'Chompas para temporada de frío, pensadas para reventa en provincia. Mando muestra primero.',
-    urgente: true, fecha: Date.now() - 1000 * 60 * 60 * 6,
-  },
-];
-
-let listings = loadFrom(STORAGE_KEY, SEED_DATA, 'l');
-let mercListings = loadFrom(MERC_STORAGE_KEY, MERC_SEED_DATA, 'm');
+let listings = [];
+let mercListings = [];
 let mineIds = loadMineIds();
 let activeTipo = '';
 let activeMercTipo = '';
@@ -185,22 +133,46 @@ const MAX_PHOTOS = 3;
 let formPhotoPicker = null;
 let mercPhotoPicker = null;
 
-function loadFrom(key, seed, prefix) {
-  try {
-    const raw = localStorage.getItem(key);
-    if (raw) return JSON.parse(raw);
-  } catch (e) { /* localStorage no disponible */ }
-  const withIds = seed.map((d, i) => ({ id: `${prefix}-seed-${i}`, ...d }));
-  try { localStorage.setItem(key, JSON.stringify(withIds)); } catch (e) { /* ignore */ }
-  return withIds;
+async function fetchListings() {
+  if (!db) return [];
+  const { data, error } = await db.from('empleos').select('*').order('fecha', { ascending: false });
+  if (error) { console.error(error); return []; }
+  return data.map(empleoFromDb);
 }
 
-function saveListings(data) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); return true; } catch (e) { return false; }
+async function fetchMercListings() {
+  if (!db) return [];
+  const { data, error } = await db.from('mercaderia').select('*').order('fecha', { ascending: false });
+  if (error) { console.error(error); return []; }
+  return data.map(mercFromDb);
 }
 
-function saveMercListings(data) {
-  try { localStorage.setItem(MERC_STORAGE_KEY, JSON.stringify(data)); return true; } catch (e) { return false; }
+async function saveListing(listing) {
+  if (!db) return false;
+  const { error } = await db.from('empleos').upsert(empleoToDb(listing));
+  if (error) console.error(error);
+  return !error;
+}
+
+async function saveMercListing(listing) {
+  if (!db) return false;
+  const { error } = await db.from('mercaderia').upsert(mercToDb(listing));
+  if (error) console.error(error);
+  return !error;
+}
+
+async function removeListing(id) {
+  if (!db) return false;
+  const { error } = await db.from('empleos').delete().eq('id', id);
+  if (error) console.error(error);
+  return !error;
+}
+
+async function removeMercListing(id) {
+  if (!db) return false;
+  const { error } = await db.from('mercaderia').delete().eq('id', id);
+  if (error) console.error(error);
+  return !error;
 }
 
 // Reduce el archivo a una sola imagen liviana (comprimida) para que quepa cómodamente
@@ -631,11 +603,12 @@ function confirmYapePayment(contactoInputId) {
   openAdminEmail('Confirmación de pago Yape', body);
 }
 
-function deleteListing(id) {
+async function deleteListing(id) {
   if (!confirm('¿Seguro que quieres eliminar este aviso?')) return;
+  const ok = await removeListing(id);
+  if (!ok) { alert('No se pudo eliminar. Revisa tu conexión e intenta de nuevo.'); return; }
   listings = listings.filter(l => l.id !== id);
   mineIds = mineIds.filter(i => i !== id);
-  saveListings(listings);
   saveMineIds();
   render();
 }
@@ -679,7 +652,7 @@ function initEmpleosForm() {
     }
   });
 
-  document.getElementById('publishForm').addEventListener('submit', (e) => {
+  document.getElementById('publishForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const whatsappDigits = document.getElementById('formWhatsapp').value.replace(/\D/g, '');
@@ -715,22 +688,28 @@ function initEmpleosForm() {
       fotos: formPhotoPicker.get(),
     };
 
-    const nextListings = listings.slice();
     let newId = null;
+    let listingToSave;
     if (editingId) {
-      const idx = nextListings.findIndex(l => l.id === editingId);
-      if (idx !== -1) nextListings[idx] = { ...nextListings[idx], ...data };
+      listingToSave = { ...listings.find(l => l.id === editingId), ...data, id: editingId };
     } else {
       newId = 'l-' + Date.now();
-      nextListings.unshift({ id: newId, ...data, fecha: Date.now() });
+      listingToSave = { id: newId, ...data, fecha: Date.now() };
     }
 
-    if (!saveListings(nextListings)) {
-      alert('No se pudo guardar. Es probable que las fotos sean muy pesadas para este navegador — prueba con menos fotos o más livianas.');
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    const ok = await saveListing(listingToSave);
+    submitBtn.disabled = false;
+    if (!ok) {
+      alert('No se pudo guardar. Revisa tu conexión a internet e intenta de nuevo.');
       return;
     }
-    listings = nextListings;
-    if (newId) {
+    if (editingId) {
+      const idx = listings.findIndex(l => l.id === editingId);
+      if (idx !== -1) listings[idx] = listingToSave;
+    } else {
+      listings.unshift(listingToSave);
       mineIds.push(newId);
       saveMineIds();
     }
@@ -912,11 +891,12 @@ function openMercModalForEdit(listing) {
   openMercModal();
 }
 
-function deleteMercListing(id) {
+async function deleteMercListing(id) {
   if (!confirm('¿Seguro que quieres eliminar esta publicación?')) return;
+  const ok = await removeMercListing(id);
+  if (!ok) { alert('No se pudo eliminar. Revisa tu conexión e intenta de nuevo.'); return; }
   mercListings = mercListings.filter(l => l.id !== id);
   mineIds = mineIds.filter(i => i !== id);
-  saveMercListings(mercListings);
   saveMineIds();
   mercRender();
 }
@@ -958,7 +938,7 @@ function initMercForm() {
     }
   });
 
-  document.getElementById('mercForm').addEventListener('submit', (e) => {
+  document.getElementById('mercForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const whatsappDigits = document.getElementById('mercWhatsapp').value.replace(/\D/g, '');
@@ -987,22 +967,28 @@ function initMercForm() {
       documentoTipo: doc.tipo,
     };
 
-    const nextListings = mercListings.slice();
     let newId = null;
+    let listingToSave;
     if (mercEditingId) {
-      const idx = nextListings.findIndex(l => l.id === mercEditingId);
-      if (idx !== -1) nextListings[idx] = { ...nextListings[idx], ...data };
+      listingToSave = { ...mercListings.find(l => l.id === mercEditingId), ...data, id: mercEditingId };
     } else {
       newId = 'm-' + Date.now();
-      nextListings.unshift({ id: newId, ...data, fecha: Date.now() });
+      listingToSave = { id: newId, ...data, fecha: Date.now() };
     }
 
-    if (!saveMercListings(nextListings)) {
-      alert('No se pudo guardar. Es probable que la foto sea muy pesada para este navegador — prueba con una foto más liviana o quítala.');
+    const mercSubmitBtn = document.getElementById('mercSubmitBtn');
+    mercSubmitBtn.disabled = true;
+    const ok = await saveMercListing(listingToSave);
+    mercSubmitBtn.disabled = false;
+    if (!ok) {
+      alert('No se pudo guardar. Revisa tu conexión a internet e intenta de nuevo.');
       return;
     }
-    mercListings = nextListings;
-    if (newId) {
+    if (mercEditingId) {
+      const idx = mercListings.findIndex(l => l.id === mercEditingId);
+      if (idx !== -1) mercListings[idx] = listingToSave;
+    } else {
+      mercListings.unshift(listingToSave);
       mineIds.push(newId);
       saveMineIds();
     }
@@ -1061,7 +1047,11 @@ function initShare() {
   });
 }
 
-function init() {
+async function init() {
+  const [initialListings, initialMercListings] = await Promise.all([fetchListings(), fetchMercListings()]);
+  listings = initialListings;
+  mercListings = initialMercListings;
+
   fillSelect(document.getElementById('filterZona'), ZONAS);
   fillSelect(document.getElementById('formZona'), ZONAS);
   fillSelect(document.getElementById('formExperiencia'), EXPERIENCIA);
@@ -1111,9 +1101,5 @@ function showFatalError(err) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  try {
-    init();
-  } catch (err) {
-    showFatalError(err);
-  }
+  init().catch(showFatalError);
 });

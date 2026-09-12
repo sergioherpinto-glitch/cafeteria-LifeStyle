@@ -35,24 +35,29 @@ python3 -m http.server 8000
 
 O simplemente abrir `index.html` en el navegador.
 
-## Estado actual (demo)
+## Estado actual
 
-Los avisos se guardan en `localStorage` del navegador — sirve para probar el
-flujo completo (publicar, editar, eliminar, filtrar, contactar), pero **cada
-persona ve solo lo que publicó en su propio dispositivo**. Para que sea un
-directorio real y compartido entre todos hace falta:
+Los avisos se guardan en una base de datos compartida (Supabase/Postgres) —
+cualquiera que entre a la página, desde cualquier dispositivo, ve los mismos
+avisos y los cambios de todos. El esquema de la base está en
+`supabase/schema.sql` (correrlo una sola vez desde el SQL Editor del proyecto
+de Supabase para crear las tablas y los datos de ejemplo).
 
-1. **Base de datos compartida** (ej. Supabase o Firebase, capa gratuita):
-   reemplazar `loadFrom`/`saveListings`/`saveMercListings` en `app.js` por
-   llamadas a la API. Ahí también tendría más sentido mover "quién puede
-   editar qué" de estar atado al navegador (`mineIds`) a estar atado al
-   WhatsApp de la persona.
-2. **Hosting** del sitio (Vercel/Netlify/GitHub Pages) para tener una URL fija
-   que se pueda compartir y pegar en los mismos carteles/grupos de WhatsApp.
-3. (Opcional, fase 2) **WhatsApp Business API / bot**: permitir publicar un
+El sitio se publica solo con GitHub Pages (`.github/workflows/deploy-pages.yml`)
+cada vez que se actualiza `costureros/`.
+
+Pendiente para una siguiente fase:
+
+1. **Cuentas de usuario reales**: hoy "quién puede editar/eliminar qué" sigue
+   atado al navegador de cada quien (`mineIds` en `localStorage`) — es una
+   ayuda de la interfaz, no una regla de seguridad real (cualquiera con la
+   URL y la clave pública de la base podría, en teoría, editar avisos ajenos
+   llamando a la API directamente). Migrar esto a estar atado al WhatsApp o
+   a una cuenta de la persona es el siguiente paso importante.
+2. (Opcional, fase 2) **WhatsApp Business API / bot**: permitir publicar un
    aviso mandando un mensaje de WhatsApp con un formato simple, para no
    depender de que la gente entre a la web a publicar.
-4. Moderación básica (reportar aviso falso/duplicado) antes de abrirlo al público.
+3. Moderación básica (reportar aviso falso/duplicado) antes de abrirlo al público a gran escala.
 
 ## DNI / RUC (confianza)
 
@@ -67,9 +72,9 @@ autodeclarado, sirve como filtro social liviano, no como garantía.
 ## Estructura
 
 - `index.html` — layout, filtros, formularios de publicación (Empleos y
-  Mercadería).
-- `app.js` — datos de ejemplo, filtrado, render de tarjetas, compresión de
+  Mercadería), Tailwind CSS vía CDN.
+- `app.js` — conexión a Supabase, filtrado, render de tarjetas, compresión de
   fotos, generación de links `wa.me` con mensaje prellenado.
-
-Los avisos de ejemplo son ficticios (inspirados en carteles y casos reales,
-pero con datos de contacto inventados).
+- `supabase/schema.sql` — tablas `empleos` y `mercaderia`, políticas de acceso,
+  y los avisos de ejemplo (ficticios, inspirados en carteles y casos reales
+  pero con datos de contacto inventados).
