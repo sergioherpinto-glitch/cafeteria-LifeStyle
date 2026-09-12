@@ -551,6 +551,8 @@ function render() {
     const node = tpl.content.cloneNode(true);
     const article = node.querySelector('.card');
     article.dataset.id = listing.id;
+    article.classList.toggle('card-urgente', !!listing.urgente);
+    article.classList.toggle('card-destacado', !!listing.destacado);
 
     node.querySelector('.owner-actions').classList.toggle('hidden', !mineIds.includes(listing.id));
     renderOwnerYape(node, listing);
@@ -903,6 +905,8 @@ function mercRender() {
     const node = tpl.content.cloneNode(true);
     const article = node.querySelector('.card');
     article.dataset.id = listing.id;
+    article.classList.toggle('card-urgente', !!listing.urgente);
+    article.classList.toggle('card-destacado', !!listing.destacado);
 
     node.querySelector('.owner-actions').classList.toggle('hidden', !mineIds.includes(listing.id));
     renderOwnerYape(node, listing);
@@ -1187,6 +1191,8 @@ function servicioRender() {
     const node = tpl.content.cloneNode(true);
     const article = node.querySelector('.card');
     article.dataset.id = listing.id;
+    article.classList.toggle('card-urgente', !!listing.urgente);
+    article.classList.toggle('card-destacado', !!listing.destacado);
 
     node.querySelector('.owner-actions').classList.toggle('hidden', !mineIds.includes(listing.id));
     renderOwnerYape(node, listing);
