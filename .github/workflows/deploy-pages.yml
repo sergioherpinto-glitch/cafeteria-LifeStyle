@@ -2,7 +2,7 @@ name: Publicar Confecciones Perú en GitHub Pages
 
 on:
   push:
-    branches: [ claude/costureros-talleres-app-1soxlu ]
+    branches: [ main ]
     paths: [ 'costureros/**' ]
   workflow_dispatch:
 
