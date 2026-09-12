@@ -10,6 +10,12 @@ const SUPABASE_URL = 'https://tsrxtnktgomvewmamiic.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_y97QpXVh59ptU2hY_5CGxw_6PyPYSyf';
 const db = (typeof supabase !== 'undefined') ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
+// Un aviso gratis dura publicado esta cantidad de días antes de ocultarse solo
+// (no se borra, solo deja de aparecer en las búsquedas). Pagar por Yape extiende
+// "vence" y marca "destacado" — ver confirmYapePayment() y el README.
+const DIAS_GRATIS = 7;
+const DIAS_EXTENSION_PAGADA = 30;
+
 function empleoToDb(l) {
   return {
     id: l.id, tipo: l.tipo, perfiles: l.perfiles, prendas: l.prendas, telas: l.telas,
@@ -18,7 +24,7 @@ function empleoToDb(l) {
     pago: l.pago, disponibilidad: l.disponibilidad, zona: l.zona, zonas_trabajo: l.zonasTrabajo || [],
     contacto: l.contacto, whatsapp: l.whatsapp, descripcion: l.descripcion, urgente: l.urgente,
     documento: l.documento || null, documento_tipo: l.documentoTipo || null, fotos: l.fotos || [],
-    fecha: l.fecha,
+    fecha: l.fecha, vence: l.vence || null, destacado: !!l.destacado,
   };
 }
 function empleoFromDb(r) {
@@ -29,6 +35,7 @@ function empleoFromDb(r) {
     pago: r.pago, disponibilidad: r.disponibilidad, zona: r.zona, zonasTrabajo: r.zonas_trabajo,
     contacto: r.contacto, whatsapp: r.whatsapp, descripcion: r.descripcion, urgente: r.urgente,
     documento: r.documento, documentoTipo: r.documento_tipo, fotos: r.fotos, fecha: r.fecha,
+    vence: r.vence, destacado: !!r.destacado,
   };
 }
 function mercToDb(l) {
@@ -38,6 +45,7 @@ function mercToDb(l) {
     precio_mayor: l.precioMayor, precio_menor: l.precioMenor, zona: l.zona, contacto: l.contacto,
     whatsapp: l.whatsapp, descripcion: l.descripcion, urgente: l.urgente, fotos: l.fotos || [],
     documento: l.documento || null, documento_tipo: l.documentoTipo || null, fecha: l.fecha,
+    vence: l.vence || null, destacado: !!l.destacado,
   };
 }
 function mercFromDb(r) {
@@ -47,6 +55,7 @@ function mercFromDb(r) {
     precioMayor: r.precio_mayor, precioMenor: r.precio_menor, zona: r.zona, contacto: r.contacto,
     whatsapp: r.whatsapp, descripcion: r.descripcion, urgente: r.urgente, fotos: r.fotos,
     documento: r.documento, documentoTipo: r.documento_tipo, fecha: r.fecha,
+    vence: r.vence, destacado: !!r.destacado,
   };
 }
 
@@ -430,6 +439,7 @@ function matchesFilters(listing) {
   const zona = document.getElementById('filterZona').value;
   const soloUrgente = document.getElementById('filterUrgente').checked;
 
+  if (listing.vence && listing.vence < Date.now()) return false;
   if (activeTipo && listing.tipo !== activeTipo) return false;
   if (zona && listing.zona !== zona && !(listing.zonasTrabajo || []).includes(zona)) return false;
   if (soloUrgente && !listing.urgente) return false;
@@ -454,7 +464,7 @@ function render() {
 
   const filtered = listings
     .filter(matchesFilters)
-    .sort((a, b) => (b.urgente - a.urgente) || (b.fecha - a.fecha));
+    .sort((a, b) => (b.destacado - a.destacado) || (b.urgente - a.urgente) || (b.fecha - a.fecha));
 
   document.getElementById('resultCount').textContent =
     `${filtered.length} aviso${filtered.length === 1 ? '' : 's'} encontrado${filtered.length === 1 ? '' : 's'}`;
@@ -474,6 +484,7 @@ function render() {
     tipoBadge.classList.add(listing.tipo === 'ofrezco' ? 'badge-ofrezco' : 'badge-busca');
 
     node.querySelector('.urgente-badge').classList.toggle('hidden', !listing.urgente);
+    node.querySelector('.destacado-badge').classList.toggle('hidden', !listing.destacado);
     node.querySelector('.contacto-name').textContent = listing.contacto;
     node.querySelector('.zona-line span').textContent = listing.tipo === 'busco'
       ? `Vive en ${listing.zona} · ${timeAgo(listing.fecha)}`
@@ -597,9 +608,10 @@ function reportListing(sectionLabel, listing) {
   openAdminEmail(`Reporte de aviso — ${sectionLabel}`, body);
 }
 
-function confirmYapePayment(contactoInputId) {
+function confirmYapePayment(contactoInputId, whatsappInputId) {
   const contacto = document.getElementById(contactoInputId).value.trim();
-  const body = `Hola, ya yapeé a ${YAPE_NUMBER} para destacar/mantener mi aviso${contacto ? ` ("${contacto}")` : ''}.\n\nVoy a adjuntar la captura del pago a este correo.`;
+  const whatsapp = document.getElementById(whatsappInputId).value.trim();
+  const body = `Hola, ya yapeé a ${YAPE_NUMBER} para destacar/extender mi aviso${contacto ? ` ("${contacto}")` : ''}.\n\nMi WhatsApp: ${whatsapp}\n\nVoy a adjuntar la captura del pago a este correo.`;
   openAdminEmail('Confirmación de pago Yape', body);
 }
 
@@ -634,7 +646,7 @@ function initEmpleosForm() {
 
   document.querySelector('#publishForm .yape-confirm-link').addEventListener('click', (e) => {
     e.preventDefault();
-    confirmYapePayment('formContacto');
+    confirmYapePayment('formContacto', 'formWhatsapp');
   });
 
   document.getElementById('grid').addEventListener('click', (e) => {
@@ -694,7 +706,7 @@ function initEmpleosForm() {
       listingToSave = { ...listings.find(l => l.id === editingId), ...data, id: editingId };
     } else {
       newId = 'l-' + Date.now();
-      listingToSave = { id: newId, ...data, fecha: Date.now() };
+      listingToSave = { id: newId, ...data, fecha: Date.now(), vence: Date.now() + DIAS_GRATIS * 86400000, destacado: false };
     }
 
     const submitBtn = document.getElementById('submitBtn');
@@ -753,6 +765,7 @@ function matchesMercFilters(listing) {
   const zona = document.getElementById('mercFilterZona').value;
   const soloUrgente = document.getElementById('mercFilterUrgente').checked;
 
+  if (listing.vence && listing.vence < Date.now()) return false;
   if (activeMercTipo && listing.tipo !== activeMercTipo) return false;
   if (zona && listing.zona !== zona) return false;
   if (soloUrgente && !listing.urgente) return false;
@@ -775,7 +788,7 @@ function mercRender() {
 
   const filtered = mercListings
     .filter(matchesMercFilters)
-    .sort((a, b) => (b.urgente - a.urgente) || (b.fecha - a.fecha));
+    .sort((a, b) => (b.destacado - a.destacado) || (b.urgente - a.urgente) || (b.fecha - a.fecha));
 
   document.getElementById('mercResultCount').textContent =
     `${filtered.length} publicación${filtered.length === 1 ? '' : 'es'} encontrada${filtered.length === 1 ? '' : 's'}`;
@@ -796,6 +809,7 @@ function mercRender() {
     tipoBadge.classList.add(listing.tipo === 'vendo' ? 'badge-ofrezco' : 'badge-busca');
 
     node.querySelector('.urgente-badge').classList.toggle('hidden', !listing.urgente);
+    node.querySelector('.destacado-badge').classList.toggle('hidden', !listing.destacado);
     node.querySelector('.contacto-name').textContent = listing.contacto;
     node.querySelector('.zona-line span').textContent = `${listing.zona} · ${timeAgo(listing.fecha)}`;
     renderDocLine(node, listing);
@@ -920,7 +934,7 @@ function initMercForm() {
 
   document.querySelector('#mercForm .yape-confirm-link').addEventListener('click', (e) => {
     e.preventDefault();
-    confirmYapePayment('mercContacto');
+    confirmYapePayment('mercContacto', 'mercWhatsapp');
   });
 
   document.getElementById('mercGrid').addEventListener('click', (e) => {
@@ -973,7 +987,7 @@ function initMercForm() {
       listingToSave = { ...mercListings.find(l => l.id === mercEditingId), ...data, id: mercEditingId };
     } else {
       newId = 'm-' + Date.now();
-      listingToSave = { id: newId, ...data, fecha: Date.now() };
+      listingToSave = { id: newId, ...data, fecha: Date.now(), vence: Date.now() + DIAS_GRATIS * 86400000, destacado: false };
     }
 
     const mercSubmitBtn = document.getElementById('mercSubmitBtn');

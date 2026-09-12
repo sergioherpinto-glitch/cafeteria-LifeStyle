@@ -24,7 +24,9 @@ create table if not exists empleos (
   documento text,
   documento_tipo text,
   fotos jsonb not null default '[]',
-  fecha bigint not null
+  fecha bigint not null,
+  vence bigint,
+  destacado boolean not null default false
 );
 
 create table if not exists mercaderia (
@@ -46,7 +48,9 @@ create table if not exists mercaderia (
   fotos jsonb not null default '[]',
   documento text,
   documento_tipo text,
-  fecha bigint not null
+  fecha bigint not null,
+  vence bigint,
+  destacado boolean not null default false
 );
 
 -- El directorio es público y sin cuentas de usuario todavía (fase 1): cualquiera

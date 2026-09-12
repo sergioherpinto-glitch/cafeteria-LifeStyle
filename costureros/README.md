@@ -59,6 +59,33 @@ Pendiente para una siguiente fase:
    depender de que la gente entre a la web a publicar.
 3. Moderación básica (reportar aviso falso/duplicado) antes de abrirlo al público a gran escala.
 
+## Vencimiento y avisos destacados (monetización)
+
+Todo aviso nuevo dura publicado **7 días gratis** (`DIAS_GRATIS` en `app.js`)
+y después deja de aparecer en las búsquedas — no se borra, solo se oculta
+(`vence` en la base es una fecha, no un borrado). Imita lo que ya pasa en los
+carteles físicos: casi siempre se resuelve en los primeros días.
+
+Cuando alguien yapea para destacar o extender su aviso (el botón "avísanos
+por correo" del formulario te manda un correo con el nombre y el WhatsApp de
+la persona), confirmas el pago y luego marcas el aviso pegando esto en el
+SQL Editor de Supabase (reemplaza el número de WhatsApp por el de esa
+persona):
+
+```sql
+update empleos set destacado = true,
+  vence = (extract(epoch from now())*1000)::bigint + 30*24*60*60*1000
+where whatsapp = '999999999';
+
+update mercaderia set destacado = true,
+  vence = (extract(epoch from now())*1000)::bigint + 30*24*60*60*1000
+where whatsapp = '999999999';
+```
+
+(Una de las dos tablas no va a encontrar esa fila y no hace nada — no pasa
+nada por correrlas ambas.) Un aviso "destacado" aparece primero en la lista
+y con una insignia ★ Destacado.
+
 ## DNI / RUC (confianza)
 
 El formulario tiene un campo opcional de documento. Un RUC (11 dígitos) se
@@ -78,3 +105,5 @@ autodeclarado, sirve como filtro social liviano, no como garantía.
 - `supabase/schema.sql` — tablas `empleos` y `mercaderia`, políticas de acceso,
   y los avisos de ejemplo (ficticios, inspirados en carteles y casos reales
   pero con datos de contacto inventados).
+- `supabase/migration_002_vencimiento_destacado.sql` — agrega las columnas
+  `vence` y `destacado` a una base ya creada (correr una sola vez).
