@@ -2,8 +2,9 @@
 
 MVP de un directorio web para centralizar lo que hoy está disperso en carteles
 físicos por Ate/Santa Anita/La Molina/Gamarra: talleres que necesitan
-costureros, costureros/as que buscan trabajo, y compra/venta de mercadería
-textil (mayorista y minorista).
+costureros, costureros/as que buscan trabajo, compra/venta de mercadería
+textil (mayorista y minorista), y talleres que ofrecen servicio de producción
+(corte, confección, estampado, bordado) a otras empresas.
 
 ## Idea
 
@@ -19,6 +20,10 @@ lo que ya usa todo el mundo: **WhatsApp**.
 - Por separado, la sección **Mercadería** conecta a quien vende mercadería
   (con foto de referencia, talla, color, modalidad de venta) con quien
   quiere comprar, por mayor o por menor.
+- Y la sección **Servicios** conecta talleres que tienen capacidad de
+  producción libre (corte, confección, estampado, bordado) con empresas que
+  necesitan que alguien les fabrique — es taller-a-empresa, distinto de
+  Empleos (persona-a-taller) y de Mercadería (venta de mercadería ya hecha).
 
 Fotos y video de la mercadería no se suben a la web (solo una foto liviana
 de referencia) — el resto viaja directo por WhatsApp una vez que hay contacto.
@@ -80,14 +85,18 @@ where whatsapp = '999999999';
 update mercaderia set destacado = true,
   vence = (extract(epoch from now())*1000)::bigint + 7*24*60*60*1000
 where whatsapp = '999999999';
+
+update servicios set destacado = true,
+  vence = (extract(epoch from now())*1000)::bigint + 7*24*60*60*1000
+where whatsapp = '999999999';
 ```
 
 (Si alguien paga por más tiempo, por ejemplo dos semanas, cambia el `7` por
 `14` en ese `UPDATE` — el precio de esa opción lo decides tú.)
 
-(Una de las dos tablas no va a encontrar esa fila y no hace nada — no pasa
-nada por correrlas ambas.) Un aviso "destacado" aparece primero en la lista
-y con una insignia ★ Destacado.
+(Las tablas donde no exista esa fila simplemente no hacen nada — no pasa nada
+por correr las tres.) Un aviso "destacado" aparece primero en la lista y con
+una insignia ★ Destacado.
 
 ## DNI / RUC (confianza)
 
@@ -101,14 +110,20 @@ autodeclarado, sirve como filtro social liviano, no como garantía.
 
 ## Estructura
 
-- `index.html` — layout, filtros, formularios de publicación (Empleos y
-  Mercadería), Tailwind CSS vía CDN.
+- `index.html` — layout, filtros, formularios de publicación (Empleos,
+  Mercadería y Servicios), Tailwind CSS vía CDN.
 - `app.js` — conexión a Supabase, filtrado, render de tarjetas, compresión de
   fotos, generación de links `wa.me` con mensaje prellenado.
-- `supabase/schema.sql` — tablas `empleos` y `mercaderia`, políticas de acceso,
-  y los avisos de ejemplo (ficticios, inspirados en carteles y casos reales
-  pero con datos de contacto inventados).
+- `supabase/schema.sql` — tablas `empleos`, `mercaderia` y `servicios`,
+  políticas de acceso, y los avisos de ejemplo (ficticios, inspirados en
+  carteles y casos reales pero con datos de contacto inventados).
 - `supabase/migration_002_vencimiento_destacado.sql` — agrega las columnas
   `vence` y `destacado` a una base ya creada (correr una sola vez).
 - `supabase/migration_003_modalidad_pago_multiple.sql` — convierte
   "modalidad de pago" de una sola opción a varias (correr una sola vez).
+- `supabase/migration_004_servicios.sql` — agrega la tabla `servicios` a una
+  base ya creada (correr una sola vez).
+- `supabase/ponte_al_dia.sql` — revisa qué falta de las tres migraciones
+  anteriores y lo agrega, sin duplicar lo que ya esté hecho. Si no estás
+  seguro de qué corriste antes, corre este archivo — es seguro correrlo las
+  veces que sea.

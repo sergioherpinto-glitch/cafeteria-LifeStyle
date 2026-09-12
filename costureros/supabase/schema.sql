@@ -53,6 +53,26 @@ create table if not exists mercaderia (
   destacado boolean not null default false
 );
 
+create table if not exists servicios (
+  id text primary key,
+  tipo text not null,
+  tipos_servicio jsonb not null default '[]',
+  prendas jsonb not null default '[]',
+  capacidad text not null default '',
+  zona text not null,
+  precio text not null default '',
+  contacto text not null,
+  whatsapp text not null,
+  descripcion text not null default '',
+  urgente boolean not null default false,
+  fotos jsonb not null default '[]',
+  documento text,
+  documento_tipo text,
+  fecha bigint not null,
+  vence bigint,
+  destacado boolean not null default false
+);
+
 -- El directorio es público y sin cuentas de usuario todavía (fase 1): cualquiera
 -- puede leer y publicar. "Editar/eliminar solo lo mío" hoy es una ayuda de la
 -- interfaz (recuerda tus ids en el celular), no una regla de seguridad del
@@ -60,11 +80,15 @@ create table if not exists mercaderia (
 -- (fase 2), estas políticas se pueden restringir por dueño.
 alter table empleos enable row level security;
 alter table mercaderia enable row level security;
+alter table servicios enable row level security;
 
 create policy "empleos: acceso público total" on empleos
   for all using (true) with check (true);
 
 create policy "mercaderia: acceso público total" on mercaderia
+  for all using (true) with check (true);
+
+create policy "servicios: acceso público total" on servicios
   for all using (true) with check (true);
 
 -- Datos de ejemplo (los mismos avisos ficticios que ya tenía la demo).
@@ -82,4 +106,10 @@ insert into mercaderia (id, tipo, items, tallas, colores, cantidad, venta_tipo, 
 ('m-seed-0', 'vendo', '["Chompas/Tejido"]', '["S","M","L","XL"]', '["Multicolor/Varios colores"]', '200 unidades', 'Mayor y menor', '["Recojo en tienda/domicilio","Envío a nivel nacional"]', 'S/25 por unidad', 'S/35 por unidad', 'Gamarra', 'Manuel R.', '911000001', 'Chompas de tejido grueso, varios colores. Mando fotos y video por WhatsApp.', false, '20601987654', 'RUC', (extract(epoch from now())*1000)::bigint - 36000000),
 ('m-seed-1', 'compro', '["Ropa deportiva"]', '[]', '[]', '1000 unidades', 'Por mayor', '[]', '', '', 'Cercado de Lima', 'Distribuidora Andina', '922000002', 'Mayorista busca proveedor constante de ropa deportiva.', false, null, null, (extract(epoch from now())*1000)::bigint - 54000000),
 ('m-seed-2', 'vendo', '["Chompas/Tejido"]', '["Talla única/estándar"]', '["Multicolor/Varios colores"]', '500 unidades', 'Por mayor', '["Contra entrega","Envío de muestra primero"]', 'A tratar según cantidad', '', 'Provincia - Sierra', 'Confecciones Rivera', '944556677', 'Chompas para temporada de frío, pensadas para reventa en provincia. Mando muestra primero.', true, null, null, (extract(epoch from now())*1000)::bigint - 21600000)
+on conflict (id) do nothing;
+
+insert into servicios (id, tipo, tipos_servicio, prendas, capacidad, zona, precio, contacto, whatsapp, descripcion, urgente, documento, documento_tipo, fecha) values
+('s-seed-0', 'ofrezco', '["Confección"]', '["Polos/Camisetas"]', '1000 docenas/mes', 'Santa Anita', 'A tratar según volumen', 'Taller Industrial Santa Anita', '966000001', 'Máquinas rectas, remalladoras y recubridoras. Entregamos con etiqueta si se necesita.', false, '20602345678', 'RUC', (extract(epoch from now())*1000)::bigint - 43200000),
+('s-seed-1', 'ofrezco', '["Estampado","Bordado"]', '[]', '5000 unidades/mes', 'Gamarra', 'Desde S/1.50 por prenda', 'Estampados Gamarra Express', '988000002', 'Estampado digital y bordado computarizado. Muestra gratis antes de producción grande.', true, null, null, (extract(epoch from now())*1000)::bigint - 64800000),
+('s-seed-2', 'busco', '["Corte y confección"]', '["Uniformes"]', '2000 unidades', 'Cercado de Lima', '', 'Empresa de Uniformes SAC', '999000003', 'Buscamos taller con capacidad constante para producción mensual de uniformes escolares.', false, null, null, (extract(epoch from now())*1000)::bigint - 90000000)
 on conflict (id) do nothing;

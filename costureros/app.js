@@ -58,6 +58,24 @@ function mercFromDb(r) {
     vence: r.vence, destacado: !!r.destacado,
   };
 }
+function servicioToDb(l) {
+  return {
+    id: l.id, tipo: l.tipo, tipos_servicio: l.tiposServicio, prendas: l.prendas,
+    capacidad: l.capacidad, zona: l.zona, precio: l.precio, contacto: l.contacto,
+    whatsapp: l.whatsapp, descripcion: l.descripcion, urgente: l.urgente, fotos: l.fotos || [],
+    documento: l.documento || null, documento_tipo: l.documentoTipo || null, fecha: l.fecha,
+    vence: l.vence || null, destacado: !!l.destacado,
+  };
+}
+function servicioFromDb(r) {
+  return {
+    id: r.id, tipo: r.tipo, tiposServicio: r.tipos_servicio, prendas: r.prendas,
+    capacidad: r.capacidad, zona: r.zona, precio: r.precio, contacto: r.contacto,
+    whatsapp: r.whatsapp, descripcion: r.descripcion, urgente: r.urgente, fotos: r.fotos,
+    documento: r.documento, documentoTipo: r.documento_tipo, fecha: r.fecha,
+    vence: r.vence, destacado: !!r.destacado,
+  };
+}
 
 // A este correo llegan los reportes y las confirmaciones de pago. No usamos
 // WhatsApp aquí a propósito: así el número personal de Sergio no queda
@@ -127,20 +145,26 @@ const MERC_ZONAS = [
   'Provincia - Sierra', 'Provincia - Costa', 'Provincia - Selva', 'Todo el Perú (envío nacional)', 'Otro'
 ];
 
+const TIPOS_SERVICIO = ['Corte', 'Confección', 'Corte y confección', 'Estampado', 'Bordado', 'Sublimado', 'Otro'];
+
 // Los avisos de ejemplo ahora viven directamente en Supabase (ver
 // supabase/schema.sql) — no hace falta duplicarlos aquí como antes.
 
 let listings = [];
 let mercListings = [];
+let servicioListings = [];
 let mineIds = loadMineIds();
 let activeTipo = '';
 let activeMercTipo = '';
+let activeServicioTipo = '';
 let editingId = null;
 let mercEditingId = null;
+let servicioEditingId = null;
 let currentView = 'empleos';
 const MAX_PHOTOS = 3;
 let formPhotoPicker = null;
 let mercPhotoPicker = null;
+let servicioPhotoPicker = null;
 
 async function fetchListings() {
   if (!db) return [];
@@ -180,6 +204,27 @@ async function removeListing(id) {
 async function removeMercListing(id) {
   if (!db) return { ok: false, message: 'La base de datos no está disponible (Supabase no cargó).' };
   const { error } = await db.from('mercaderia').delete().eq('id', id);
+  if (error) console.error(error);
+  return { ok: !error, message: error ? error.message : null };
+}
+
+async function fetchServicios() {
+  if (!db) return [];
+  const { data, error } = await db.from('servicios').select('*').order('fecha', { ascending: false });
+  if (error) { console.error(error); return []; }
+  return data.map(servicioFromDb);
+}
+
+async function saveServicio(listing) {
+  if (!db) return { ok: false, message: 'La base de datos no está disponible (Supabase no cargó).' };
+  const { error } = await db.from('servicios').upsert(servicioToDb(listing));
+  if (error) console.error(error);
+  return { ok: !error, message: error ? error.message : null };
+}
+
+async function removeServicio(id) {
+  if (!db) return { ok: false, message: 'La base de datos no está disponible (Supabase no cargó).' };
+  const { error } = await db.from('servicios').delete().eq('id', id);
   if (error) console.error(error);
   return { ok: !error, message: error ? error.message : null };
 }
@@ -310,12 +355,12 @@ function checkedValues(containerId) {
   return Array.from(document.querySelectorAll(`#${containerId} input:checked`)).map(i => i.value);
 }
 
-function resolveChipValues(containerId, otroInputId) {
+function resolveChipValues(containerId, otroInputId, triggerValue = 'Otra') {
   const checked = checkedValues(containerId);
-  if (!checked.includes('Otra')) return checked;
+  if (!checked.includes(triggerValue)) return checked;
   const custom = document.getElementById(otroInputId).value.trim();
   if (!custom) return checked;
-  const withoutOtra = checked.filter(v => v !== 'Otra');
+  const withoutOtra = checked.filter(v => v !== triggerValue);
   const customValues = custom.split(',').map(s => s.trim()).filter(Boolean);
   return [...withoutOtra, ...customValues];
 }
@@ -669,7 +714,7 @@ function initEmpleosForm() {
   wireOtroToggle('maquinaChips', 'maquinaOtroField');
   wireOtroToggle('operacionChips', 'operacionOtroField');
   wireOtroToggle('manualChips', 'manualOtroField');
-  wireOtroToggle('zonaTrabajoChips', 'zonaTrabajoOtroField');
+  wireOtroToggle('zonaTrabajoChips', 'zonaTrabajoOtroField', 'Otro');
 
   formPhotoPicker = makePhotoPicker('formFoto', 'formFotoPreviewList', 'formFotoLabel', 'formFotoConfirmWrap');
 
@@ -719,7 +764,7 @@ function initEmpleosForm() {
       pago: document.getElementById('formPago').value.trim(),
       disponibilidad: resolveOtroText('disponibilidadChips', 'disponibilidadOtro'),
       zona: resolveZona('formZona', 'zonaOtro'),
-      zonasTrabajo: tipo === 'busco' ? resolveChipValues('zonaTrabajoChips', 'zonaTrabajoOtro') : [],
+      zonasTrabajo: tipo === 'busco' ? resolveChipValues('zonaTrabajoChips', 'zonaTrabajoOtro', 'Otro') : [],
       contacto: document.getElementById('formContacto').value.trim(),
       whatsapp: whatsappDigits,
       descripcion: document.getElementById('formDescripcion').value.trim(),
@@ -956,7 +1001,7 @@ function initMercForm() {
   wireZonaOtro('mercZona', 'mercZonaOtroField');
   wireOtroToggle('mercItemChips', 'mercItemOtroField');
   wireOtroToggle('mercTallaChips', 'mercTallaOtroField');
-  wireOtroToggle('mercColorChips', 'mercColorOtroField');
+  wireOtroToggle('mercColorChips', 'mercColorOtroField', 'Otro');
   wireOtroToggle('mercModalidadVentaChips', 'mercModalidadVentaOtroField');
 
   mercPhotoPicker = makePhotoPicker('mercFoto', 'mercFotoPreviewList', 'mercFotoLabel', 'mercFotoConfirmWrap');
@@ -994,7 +1039,7 @@ function initMercForm() {
       tipo: document.querySelector('input[name="mercTipo"]:checked').value,
       items: resolveChipValues('mercItemChips', 'mercItemOtro'),
       tallas: resolveChipValues('mercTallaChips', 'mercTallaOtro'),
-      colores: resolveChipValues('mercColorChips', 'mercColorOtro'),
+      colores: resolveChipValues('mercColorChips', 'mercColorOtro', 'Otro'),
       cantidad: document.getElementById('mercCantidad').value.trim(),
       ventaTipo: document.getElementById('mercVentaTipo').value,
       modalidadVenta: resolveChipValues('mercModalidadVentaChips', 'mercModalidadVentaOtro'),
@@ -1055,14 +1100,259 @@ function initMercFilters() {
   });
 }
 
+// ================= SERVICIOS =================
+
+function servicioWaMessage(listing) {
+  const tipo = listing.tiposServicio.slice(0, 2).join(', ') || 'el servicio';
+  if (listing.tipo === 'ofrezco') {
+    return `Hola, vi tu servicio de ${tipo} en ${listing.zona}. Me interesa, ¿cuál es tu capacidad y precio?`;
+  }
+  return `Hola ${listing.contacto}, vi que buscas un taller para ${tipo}. Nosotros ofrecemos ese servicio, ¿te interesa?`;
+}
+
+function servicioWaLink(listing) {
+  const digits = (listing.whatsapp || '').replace(/\D/g, '');
+  return `https://wa.me/51${digits}?text=${encodeURIComponent(servicioWaMessage(listing))}`;
+}
+
+function matchesServicioFilters(listing) {
+  const q = document.getElementById('servicioSearchInput').value.trim().toLowerCase();
+  const zona = document.getElementById('servicioFilterZona').value;
+  const soloUrgente = document.getElementById('servicioFilterUrgente').checked;
+
+  if (listing.vence && listing.vence < Date.now()) return false;
+  if (activeServicioTipo && listing.tipo !== activeServicioTipo) return false;
+  if (zona && listing.zona !== zona) return false;
+  if (soloUrgente && !listing.urgente) return false;
+  if (q) {
+    const haystack = [
+      listing.contacto, listing.descripcion, listing.zona, listing.capacidad, listing.precio,
+      ...listing.tiposServicio, ...listing.prendas,
+    ].join(' ').toLowerCase();
+    if (!haystack.includes(q)) return false;
+  }
+  return true;
+}
+
+function servicioRender() {
+  const grid = document.getElementById('servicioGrid');
+  const empty = document.getElementById('servicioEmptyState');
+  const tpl = document.getElementById('servicioCardTemplate');
+  const metaTpl = document.getElementById('metaLineTemplate');
+  grid.innerHTML = '';
+
+  const filtered = servicioListings
+    .filter(matchesServicioFilters)
+    .sort((a, b) => (b.destacado - a.destacado) || (b.urgente - a.urgente) || (b.fecha - a.fecha));
+
+  document.getElementById('servicioResultCount').textContent =
+    `${filtered.length} publicación${filtered.length === 1 ? '' : 'es'} encontrada${filtered.length === 1 ? '' : 's'}`;
+
+  empty.classList.toggle('visible', filtered.length === 0);
+
+  filtered.forEach(listing => {
+    const node = tpl.content.cloneNode(true);
+    const article = node.querySelector('.card');
+    article.dataset.id = listing.id;
+
+    node.querySelector('.owner-actions').classList.toggle('hidden', !mineIds.includes(listing.id));
+    renderCardPhotos(node, listing.fotos);
+
+    const tipoBadge = node.querySelector('.tipo-badge');
+    tipoBadge.textContent = listing.tipo === 'ofrezco' ? 'Ofrece servicio' : 'Busca taller';
+    tipoBadge.classList.add(listing.tipo === 'ofrezco' ? 'badge-ofrezco' : 'badge-busca');
+
+    node.querySelector('.urgente-badge').classList.toggle('hidden', !listing.urgente);
+    node.querySelector('.destacado-badge').classList.toggle('hidden', !listing.destacado);
+    node.querySelector('.contacto-name').textContent = listing.contacto;
+    node.querySelector('.zona-line span').textContent = `${listing.zona} · ${timeAgo(listing.fecha)}`;
+    renderDocLine(node, listing);
+
+    appendChips(node.querySelector('.tipo-servicio-chips'), listing.tiposServicio, 'chip chip-perfil');
+    appendChips(node.querySelector('.prenda-chips'), listing.prendas, 'chip');
+
+    const metaLines = node.querySelector('.meta-lines');
+    appendMetaLine(metaLines, metaTpl, listing.capacidad ? `Capacidad: ${listing.capacidad}` : '');
+    appendMetaLine(metaLines, metaTpl, listing.precio ? `Precio: ${listing.precio}` : '');
+
+    const descEl = node.querySelector('.desc-text');
+    if (listing.descripcion) { descEl.textContent = listing.descripcion; } else { descEl.remove(); }
+
+    node.querySelector('.wa-link').href = servicioWaLink(listing);
+
+    grid.appendChild(node);
+  });
+}
+
+function openServicioModal() { document.getElementById('servicioModal').classList.add('open'); }
+function closeServicioModal() { document.getElementById('servicioModal').classList.remove('open'); }
+
+function openServicioModalForCreate() {
+  servicioEditingId = null;
+  const form = document.getElementById('servicioForm');
+  form.reset();
+  hideOtroFieldsIn('servicioForm');
+  updateZonaOtroVisibility('servicioZona', 'servicioZonaOtroField');
+  servicioPhotoPicker.reset();
+  document.getElementById('servicioModalTitle').textContent = 'Publicar servicio';
+  document.getElementById('servicioSubmitBtn').textContent = 'Publicar servicio';
+  openServicioModal();
+}
+
+function openServicioModalForEdit(listing) {
+  servicioEditingId = listing.id;
+  const form = document.getElementById('servicioForm');
+  form.reset();
+
+  document.querySelector(`input[name="servicioTipo"][value="${listing.tipo}"]`).checked = true;
+  populateChipGroup('servicioTipoServicioChips', TIPOS_SERVICIO, listing.tiposServicio, 'servicioTipoServicioOtro', 'servicioTipoServicioOtroField');
+  populateChipGroup('servicioPrendaChips', PRENDAS, listing.prendas, 'servicioPrendaOtro', 'servicioPrendaOtroField');
+  document.getElementById('servicioCapacidad').value = listing.capacidad || '';
+  document.getElementById('servicioPrecio').value = listing.precio || '';
+
+  if (ZONAS.includes(listing.zona)) {
+    document.getElementById('servicioZona').value = listing.zona;
+    document.getElementById('servicioZonaOtro').value = '';
+  } else {
+    document.getElementById('servicioZona').value = 'Otro';
+    document.getElementById('servicioZonaOtro').value = listing.zona;
+  }
+  document.getElementById('servicioContacto').value = listing.contacto;
+  document.getElementById('servicioWhatsapp').value = listing.whatsapp;
+  document.getElementById('servicioDocumento').value = listing.documento || '';
+  document.getElementById('servicioDescripcion').value = listing.descripcion || '';
+  document.getElementById('servicioUrgente').checked = listing.urgente;
+
+  servicioPhotoPicker.set(listing.fotos);
+
+  updateZonaOtroVisibility('servicioZona', 'servicioZonaOtroField');
+  document.getElementById('servicioModalTitle').textContent = 'Editar servicio';
+  document.getElementById('servicioSubmitBtn').textContent = 'Guardar cambios';
+  openServicioModal();
+}
+
+async function deleteServicio(id) {
+  if (!confirm('¿Seguro que quieres eliminar esta publicación?')) return;
+  const result = await removeServicio(id);
+  if (!result.ok) { alert('No se pudo eliminar.' + (result.message ? `\n\nDetalle: ${result.message}` : ' Revisa tu conexión e intenta de nuevo.')); return; }
+  servicioListings = servicioListings.filter(l => l.id !== id);
+  mineIds = mineIds.filter(i => i !== id);
+  saveMineIds();
+  servicioRender();
+}
+
+function initServicioForm() {
+  document.getElementById('servicioCloseModal').addEventListener('click', closeServicioModal);
+  document.getElementById('servicioModal').addEventListener('click', (e) => {
+    if (e.target.id === 'servicioModal') closeServicioModal();
+  });
+
+  wireZonaOtro('servicioZona', 'servicioZonaOtroField');
+  wireOtroToggle('servicioTipoServicioChips', 'servicioTipoServicioOtroField', 'Otro');
+  wireOtroToggle('servicioPrendaChips', 'servicioPrendaOtroField');
+
+  servicioPhotoPicker = makePhotoPicker('servicioFoto', 'servicioFotoPreviewList', 'servicioFotoLabel', 'servicioFotoConfirmWrap');
+
+  document.querySelector('#servicioForm .yape-confirm-link').addEventListener('click', (e) => {
+    e.preventDefault();
+    confirmYapePayment('servicioContacto', 'servicioWhatsapp');
+  });
+
+  document.getElementById('servicioGrid').addEventListener('click', (e) => {
+    const card = e.target.closest('.card');
+    if (!card) return;
+    const id = card.dataset.id;
+    if (e.target.closest('.edit-btn')) {
+      const listing = servicioListings.find(l => l.id === id);
+      if (listing) openServicioModalForEdit(listing);
+    } else if (e.target.closest('.delete-btn')) {
+      deleteServicio(id);
+    } else if (e.target.closest('.report-link')) {
+      const listing = servicioListings.find(l => l.id === id);
+      if (listing) reportListing('Servicios', listing);
+    }
+  });
+
+  document.getElementById('servicioForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const whatsappDigits = document.getElementById('servicioWhatsapp').value.replace(/\D/g, '');
+    if (whatsappDigits.length !== 9) { alert('Ingresa un número de WhatsApp válido de 9 dígitos.'); return; }
+
+    const doc = parseDocumento(document.getElementById('servicioDocumento').value);
+    if (doc === null) { alert('El DNI debe tener 8 dígitos y el RUC 11. Déjalo vacío si prefieres no ponerlo.'); return; }
+
+    const data = {
+      tipo: document.querySelector('input[name="servicioTipo"]:checked').value,
+      tiposServicio: resolveChipValues('servicioTipoServicioChips', 'servicioTipoServicioOtro', 'Otro'),
+      prendas: resolveChipValues('servicioPrendaChips', 'servicioPrendaOtro'),
+      capacidad: document.getElementById('servicioCapacidad').value.trim(),
+      zona: resolveZona('servicioZona', 'servicioZonaOtro'),
+      precio: document.getElementById('servicioPrecio').value.trim(),
+      contacto: document.getElementById('servicioContacto').value.trim(),
+      whatsapp: whatsappDigits,
+      descripcion: document.getElementById('servicioDescripcion').value.trim(),
+      urgente: document.getElementById('servicioUrgente').checked,
+      fotos: servicioPhotoPicker.get(),
+      documento: doc.valor,
+      documentoTipo: doc.tipo,
+    };
+
+    let newId = null;
+    let listingToSave;
+    if (servicioEditingId) {
+      listingToSave = { ...servicioListings.find(l => l.id === servicioEditingId), ...data, id: servicioEditingId };
+    } else {
+      newId = 's-' + Date.now();
+      listingToSave = { id: newId, ...data, fecha: Date.now(), vence: Date.now() + DIAS_GRATIS * 86400000, destacado: false };
+    }
+
+    const servicioSubmitBtn = document.getElementById('servicioSubmitBtn');
+    servicioSubmitBtn.disabled = true;
+    const result = await saveServicio(listingToSave);
+    servicioSubmitBtn.disabled = false;
+    if (!result.ok) {
+      alert('No se pudo guardar.' + (result.message ? `\n\nDetalle: ${result.message}` : ' Revisa tu conexión a internet e intenta de nuevo.'));
+      return;
+    }
+    if (servicioEditingId) {
+      const idx = servicioListings.findIndex(l => l.id === servicioEditingId);
+      if (idx !== -1) servicioListings[idx] = listingToSave;
+    } else {
+      servicioListings.unshift(listingToSave);
+      mineIds.push(newId);
+      saveMineIds();
+    }
+    closeServicioModal();
+    servicioRender();
+  });
+}
+
+function initServicioFilters() {
+  document.getElementById('servicioSearchInput').addEventListener('input', servicioRender);
+  document.getElementById('servicioFilterZona').addEventListener('change', servicioRender);
+  document.getElementById('servicioFilterUrgente').addEventListener('change', servicioRender);
+
+  document.querySelectorAll('#serviciosView .tipo-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeServicioTipo = btn.dataset.tipo;
+      document.querySelectorAll('#serviciosView .tipo-tab').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
+      servicioRender();
+    });
+  });
+}
+
 // ================= Navegación entre secciones + compartir =================
 
 function switchView(view) {
   currentView = view;
   document.getElementById('empleosView').classList.toggle('hidden', view !== 'empleos');
   document.getElementById('mercaderiaView').classList.toggle('hidden', view !== 'mercaderia');
+  document.getElementById('serviciosView').classList.toggle('hidden', view !== 'servicios');
   document.querySelectorAll('.mode-tab').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === view)));
-  document.getElementById('fab').setAttribute('aria-label', view === 'empleos' ? 'Publicar aviso' : 'Publicar mercadería');
+  const fabLabels = { empleos: 'Publicar aviso', mercaderia: 'Publicar mercadería', servicios: 'Publicar servicio' };
+  document.getElementById('fab').setAttribute('aria-label', fabLabels[view]);
 }
 
 function initNav() {
@@ -1072,7 +1362,8 @@ function initNav() {
 
   document.getElementById('fab').addEventListener('click', () => {
     if (currentView === 'empleos') openModalForCreate();
-    else openMercModalForCreate();
+    else if (currentView === 'mercaderia') openMercModalForCreate();
+    else openServicioModalForCreate();
   });
 }
 
@@ -1091,9 +1382,10 @@ function initShare() {
 }
 
 async function init() {
-  const [initialListings, initialMercListings] = await Promise.all([fetchListings(), fetchMercListings()]);
+  const [initialListings, initialMercListings, initialServicioListings] = await Promise.all([fetchListings(), fetchMercListings(), fetchServicios()]);
   listings = initialListings;
   mercListings = initialMercListings;
+  servicioListings = initialServicioListings;
 
   fillSelect(document.getElementById('filterZona'), ZONAS);
   fillSelect(document.getElementById('formZona'), ZONAS);
@@ -1130,6 +1422,15 @@ async function init() {
   initMercForm();
   initMercFilters();
   mercRender();
+
+  fillSelect(document.getElementById('servicioFilterZona'), ZONAS);
+  fillSelect(document.getElementById('servicioZona'), ZONAS);
+  buildChipGroup('servicioTipoServicioChips', TIPOS_SERVICIO);
+  buildChipGroup('servicioPrendaChips', PRENDAS);
+  updateZonaOtroVisibility('servicioZona', 'servicioZonaOtroField');
+  initServicioForm();
+  initServicioFilters();
+  servicioRender();
 
   initNav();
   initShare();
