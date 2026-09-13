@@ -118,5 +118,34 @@ insert into avisos_gratis_usados (whatsapp, seccion, primera_vez)
 select whatsapp, 'servicios', min(fecha) from servicios group by whatsapp
 on conflict (whatsapp, seccion) do nothing;
 
--- 5) Refresca el caché de la API para que vea los cambios de inmediato.
+-- 5) Video de Mercadería (un solo video por aviso, guardado en un cajón de
+-- Storage aparte, no como texto en la tabla) — por si esa migración no se
+-- corrió.
+alter table mercaderia add column if not exists video text;
+
+insert into storage.buckets (id, name, public)
+values ('mercaderia-videos', 'mercaderia-videos', true)
+on conflict (id) do nothing;
+
+drop policy if exists "mercaderia-videos: subir" on storage.objects;
+create policy "mercaderia-videos: subir" on storage.objects
+  for insert to public
+  with check (bucket_id = 'mercaderia-videos');
+
+drop policy if exists "mercaderia-videos: ver" on storage.objects;
+create policy "mercaderia-videos: ver" on storage.objects
+  for select to public
+  using (bucket_id = 'mercaderia-videos');
+
+drop policy if exists "mercaderia-videos: actualizar" on storage.objects;
+create policy "mercaderia-videos: actualizar" on storage.objects
+  for update to public
+  using (bucket_id = 'mercaderia-videos');
+
+drop policy if exists "mercaderia-videos: borrar" on storage.objects;
+create policy "mercaderia-videos: borrar" on storage.objects
+  for delete to public
+  using (bucket_id = 'mercaderia-videos');
+
+-- 6) Refresca el caché de la API para que vea los cambios de inmediato.
 notify pgrst, 'reload schema';

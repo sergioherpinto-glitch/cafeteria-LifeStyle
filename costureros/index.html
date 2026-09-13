@@ -382,9 +382,22 @@
         <label for="mercFoto" id="mercFotoLabel" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full border-[1.5px] border-dashed border-thread bg-thread-soft text-thread-dark text-[14px] font-bold cursor-pointer hover:bg-thread hover:text-white hover:border-solid transition-colors"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Agregar foto</label>
         <div id="mercFotoPreviewList" class="mt-2 flex flex-wrap gap-2 empty:mt-0"></div>
       </div>
-      <p class="text-[12px] text-ink-soft mt-1.5">Se comprimen automáticamente. Los videos no caben aquí — un solo video pesa más que todo el espacio disponible en este navegador; se comparten directo por WhatsApp una vez que te escriban.</p>
+      <p class="text-[12px] text-ink-soft mt-1.5">Se comprimen automáticamente.</p>
       <label id="mercFotoConfirmWrap" class="hidden flex items-start gap-2 text-[14px] font-semibold bg-white border border-stone-200 rounded-2xl px-3.5 py-3 mt-3">
         <input id="mercFotoConfirm" type="checkbox" class="accent-thread w-4 h-4 mt-0.5 shrink-0"> Confirmo que mis fotos son apropiadas para el aviso (nada de contenido explícito u ofensivo)
+      </label>
+    </div>
+
+    <div class="mb-4">
+      <label for="mercVideo" class="block text-[14px] font-semibold mb-2">Video (opcional, hasta 25 MB)</label>
+      <div>
+        <input id="mercVideo" type="file" accept="video/*" class="absolute opacity-0 w-px h-px overflow-hidden">
+        <label for="mercVideo" id="mercVideoLabel" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full border-[1.5px] border-dashed border-thread bg-thread-soft text-thread-dark text-[14px] font-bold cursor-pointer hover:bg-thread hover:text-white hover:border-solid transition-colors"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg> Agregar video</label>
+        <div id="mercVideoPreview" class="mt-2 empty:mt-0"></div>
+      </div>
+      <p class="text-[12px] text-ink-soft mt-1.5">Un solo video, hasta 25 MB. No se comprime — si tu celular graba muy pesado, graba uno más corto o de menor calidad.</p>
+      <label id="mercVideoConfirmWrap" class="hidden flex items-start gap-2 text-[14px] font-semibold bg-white border border-stone-200 rounded-2xl px-3.5 py-3 mt-3">
+        <input id="mercVideoConfirm" type="checkbox" class="accent-thread w-4 h-4 mt-0.5 shrink-0"> Confirmo que mi video es apropiado para el aviso (nada de contenido explícito u ofensivo)
       </label>
     </div>
 
@@ -476,8 +489,7 @@
     </label>
 
     <button type="submit" id="mercSubmitBtn" class="submit-btn w-full py-3.5 border-0 rounded-full text-white font-extrabold text-[15px] cursor-pointer transition-transform">Publicar</button>
-    <p class="text-[11px] text-center text-ink-soft mt-3">El video no se sube aquí (no cabe) — se comparte directo por WhatsApp una vez que te escriban.</p>
-    <p class="text-[11px] text-center text-ink-soft mt-2">Tu aviso dura publicado gratis 7 días. ¿Quieres que se destaque (aparece primero) o dure 7 días más? Yapea <strong>S/10</strong> a <strong>926924581</strong> y <a href="#" class="yape-confirm-link underline">compártenos el comprobante por WhatsApp a ese mismo número</a>.</p>
+    <p class="text-[11px] text-center text-ink-soft mt-3">Tu aviso dura publicado gratis 7 días. ¿Quieres que se destaque (aparece primero) o dure 7 días más? Yapea <strong>S/10</strong> a <strong>926924581</strong> y <a href="#" class="yape-confirm-link underline">compártenos el comprobante por WhatsApp a ese mismo número</a>.</p>
   </form>
 </div>
 
@@ -607,6 +619,7 @@
 <template id="mercCardTemplate">
   <article class="card">
     <div class="card-photos flex gap-1.5 overflow-x-auto empty:hidden"></div>
+    <video class="merc-video w-full rounded-2xl bg-stone-100" controls muted playsinline></video>
     <div class="flex items-center justify-between gap-2">
       <span class="badge tipo-badge text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full"></span>
       <div class="flex items-center gap-1.5">

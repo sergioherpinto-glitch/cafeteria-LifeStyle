@@ -46,6 +46,7 @@ create table if not exists mercaderia (
   descripcion text not null default '',
   urgente boolean not null default false,
   fotos jsonb not null default '[]',
+  video text,
   documento text,
   documento_tipo text,
   fecha bigint not null,
@@ -146,6 +147,29 @@ create trigger trg_mercaderia_gratis before insert on mercaderia
   for each row execute function fn_check_aviso_gratis();
 create trigger trg_servicios_gratis before insert on servicios
   for each row execute function fn_check_aviso_gratis();
+
+-- Video de Mercadería: se guarda en un cajón de Storage aparte (no como
+-- texto en la tabla), público, con el mismo criterio de acceso sin cuentas
+-- de usuario que el resto del sitio (fase 1).
+insert into storage.buckets (id, name, public)
+values ('mercaderia-videos', 'mercaderia-videos', true)
+on conflict (id) do nothing;
+
+create policy "mercaderia-videos: subir" on storage.objects
+  for insert to public
+  with check (bucket_id = 'mercaderia-videos');
+
+create policy "mercaderia-videos: ver" on storage.objects
+  for select to public
+  using (bucket_id = 'mercaderia-videos');
+
+create policy "mercaderia-videos: actualizar" on storage.objects
+  for update to public
+  using (bucket_id = 'mercaderia-videos');
+
+create policy "mercaderia-videos: borrar" on storage.objects
+  for delete to public
+  using (bucket_id = 'mercaderia-videos');
 
 -- Datos de ejemplo (los mismos avisos ficticios que ya tenía la demo).
 insert into empleos (id, tipo, perfiles, prendas, telas, experiencia, maquinas, operaciones, labor_manual, tamano_taller, modalidad_pago, pago, disponibilidad, zona, zonas_trabajo, contacto, whatsapp, descripcion, urgente, documento, documento_tipo, fecha) values

@@ -25,8 +25,9 @@ lo que ya usa todo el mundo: **WhatsApp**.
   necesitan que alguien les fabrique — es taller-a-empresa, distinto de
   Empleos (persona-a-taller) y de Mercadería (venta de mercadería ya hecha).
 
-Fotos y video de la mercadería no se suben a la web (solo una foto liviana
-de referencia) — el resto viaja directo por WhatsApp una vez que hay contacto.
+En Mercadería se puede subir hasta 6 fotos y un video corto por aviso —
+suficiente para mostrar bien el producto sin depender de que primero te
+escriban por WhatsApp.
 
 ## Cómo verlo
 
@@ -133,6 +134,24 @@ diferencia sin cuentas de usuario reales. Si esto te genera problemas en la
 práctica, avísame y ajustamos la regla (por ejemplo, permitir 2 gratis en vez
 de 1 antes de empezar a cobrar).
 
+## Fotos y video
+
+Las fotos (hasta 6 por aviso, en las tres secciones) se comprimen en el
+propio navegador antes de guardarse, y se guardan directo como texto dentro
+de la fila del aviso en la base — por eso son livianas a propósito, no fotos
+de calidad completa.
+
+El video (solo en Mercadería, uno por aviso, hasta 25 MB) funciona distinto:
+no se comprime ni se guarda como texto — se sube tal cual a un espacio de
+archivos aparte ("Supabase Storage", un cajón llamado `mercaderia-videos`
+que ya viene incluido en tu proyecto) y en la tabla `mercaderia` solo se
+guarda el link a ese archivo (columna `video`). Si más adelante quieres subir
+el límite de 25 MB, o agregar video a Empleos/Servicios también, avísame.
+
+Esto vive en `supabase/migration_006_video_mercaderia.sql` (crea la columna
+`video`, el cajón de Storage, y sus políticas de acceso — mismo criterio sin
+cuentas de usuario que el resto del sitio).
+
 ## DNI / RUC (confianza)
 
 El formulario tiene un campo opcional de documento. Un RUC (11 dígitos) se
@@ -160,6 +179,8 @@ autodeclarado, sirve como filtro social liviano, no como garantía.
   base ya creada (correr una sola vez).
 - `supabase/migration_005_limite_avisos_gratis.sql` — agrega el límite de un
   aviso gratis por WhatsApp por sección (correr una sola vez).
+- `supabase/migration_006_video_mercaderia.sql` — agrega la columna `video`
+  y el cajón de Storage para videos de Mercadería (correr una sola vez).
 - `supabase/ponte_al_dia.sql` — revisa qué falta de las migraciones
   anteriores y lo agrega, sin duplicar lo que ya esté hecho. Si no estás
   seguro de qué corriste antes, corre este archivo — es seguro correrlo las

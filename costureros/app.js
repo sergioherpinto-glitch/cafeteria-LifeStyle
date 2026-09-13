@@ -44,6 +44,7 @@ function mercToDb(l) {
     cantidad: l.cantidad, venta_tipo: l.ventaTipo, modalidad_venta: l.modalidadVenta,
     precio_mayor: l.precioMayor, precio_menor: l.precioMenor, zona: l.zona, contacto: l.contacto,
     whatsapp: l.whatsapp, descripcion: l.descripcion, urgente: l.urgente, fotos: l.fotos || [],
+    video: l.video || null,
     documento: l.documento || null, documento_tipo: l.documentoTipo || null, fecha: l.fecha,
     vence: l.vence || null, destacado: !!l.destacado,
   };
@@ -54,6 +55,7 @@ function mercFromDb(r) {
     cantidad: r.cantidad, ventaTipo: r.venta_tipo, modalidadVenta: r.modalidad_venta,
     precioMayor: r.precio_mayor, precioMenor: r.precio_menor, zona: r.zona, contacto: r.contacto,
     whatsapp: r.whatsapp, descripcion: r.descripcion, urgente: r.urgente, fotos: r.fotos,
+    video: r.video,
     documento: r.documento, documentoTipo: r.documento_tipo, fecha: r.fecha,
     vence: r.vence, destacado: !!r.destacado,
   };
@@ -165,6 +167,13 @@ const MAX_PHOTOS = 6;
 let formPhotoPicker = null;
 let mercPhotoPicker = null;
 let servicioPhotoPicker = null;
+
+// Un solo video por aviso de Mercadería, subido a Supabase Storage (no se
+// guarda como texto en la base como las fotos — pesa demasiado). Ver
+// mercVideoPicker() y supabase/migration_006_video_mercaderia.sql.
+const MERC_VIDEO_BUCKET = 'mercaderia-videos';
+const MAX_VIDEO_MB = 25;
+let mercVideoPicker = null;
 
 async function fetchListings() {
   if (!db) return [];
@@ -314,6 +323,104 @@ function makePhotoPicker(inputId, listId, labelId, confirmWrapId) {
   };
 }
 
+// Controla el selector de "un solo video" del formulario de Mercadería. A
+// diferencia de las fotos, el video NO se comprime ni se guarda como texto
+// en la base — se sube tal cual a Supabase Storage recién al enviar el
+// formulario (ver uploadMercVideo). Aquí solo se valida el peso y se arma
+// la vista previa (con una URL local mientras no se ha subido).
+function makeVideoPicker(inputId, previewId, labelId, confirmWrapId) {
+  let file = null;
+  let existingUrl = null;
+  let objectUrl = null;
+
+  function updateConfirmCheckbox() {
+    if (!confirmWrapId) return;
+    const wrap = document.getElementById(confirmWrapId);
+    const checkbox = wrap.querySelector('input');
+    const show = !!(file || existingUrl);
+    wrap.classList.toggle('hidden', !show);
+    checkbox.required = show;
+    if (!show) checkbox.checked = false;
+  }
+
+  function renderPreview() {
+    const list = document.getElementById(previewId);
+    list.innerHTML = '';
+    const src = objectUrl || existingUrl;
+    if (src) {
+      const wrap = document.createElement('div');
+      wrap.className = 'relative w-28';
+      const video = document.createElement('video');
+      video.src = src;
+      video.controls = true;
+      video.muted = true;
+      video.className = 'w-28 rounded-xl border border-stone-200 block';
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'foto-thumb-remove';
+      removeBtn.setAttribute('aria-label', 'Quitar video');
+      removeBtn.textContent = '×';
+      removeBtn.addEventListener('click', () => {
+        file = null;
+        existingUrl = null;
+        if (objectUrl) { URL.revokeObjectURL(objectUrl); objectUrl = null; }
+        renderPreview();
+      });
+      wrap.appendChild(video);
+      wrap.appendChild(removeBtn);
+      list.appendChild(wrap);
+    }
+    document.getElementById(labelId).classList.toggle('hidden', !!src);
+    updateConfirmCheckbox();
+  }
+
+  document.getElementById(inputId).addEventListener('change', (e) => {
+    const picked = e.target.files[0];
+    e.target.value = '';
+    if (!picked) return;
+    if (picked.size > MAX_VIDEO_MB * 1024 * 1024) {
+      alert(`Ese video pesa más de ${MAX_VIDEO_MB} MB. Prueba con uno más corto o de menor calidad.`);
+      return;
+    }
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
+    file = picked;
+    existingUrl = null;
+    objectUrl = URL.createObjectURL(file);
+    renderPreview();
+  });
+
+  return {
+    getFile: () => file,
+    getExistingUrl: () => existingUrl,
+    isEmpty: () => !file && !existingUrl,
+    set(url) {
+      file = null;
+      existingUrl = url || null;
+      if (objectUrl) { URL.revokeObjectURL(objectUrl); objectUrl = null; }
+      renderPreview();
+    },
+    reset() {
+      file = null;
+      existingUrl = null;
+      if (objectUrl) { URL.revokeObjectURL(objectUrl); objectUrl = null; }
+      renderPreview();
+    },
+  };
+}
+
+// Sube el video elegido a Supabase Storage y devuelve su URL pública — recién
+// al momento de publicar, no antes (evita subir videos que la persona luego
+// descarta). Si falla, devuelve ok:false con el detalle del error real.
+async function uploadMercVideo(file) {
+  if (!db) return { ok: false, message: 'La base de datos no está disponible (Supabase no cargó).' };
+  const ext = (file.name.split('.').pop() || 'mp4').toLowerCase();
+  const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const { error } = await db.storage.from(MERC_VIDEO_BUCKET).upload(path, file, { contentType: file.type || 'video/mp4' });
+  if (error) { console.error(error); return { ok: false, message: error.message }; }
+  const { data } = db.storage.from(MERC_VIDEO_BUCKET).getPublicUrl(path);
+  return { ok: true, url: data.publicUrl };
+}
+
 function loadMineIds() {
   try { return JSON.parse(localStorage.getItem(MINE_KEY)) || []; } catch (e) { return []; }
 }
@@ -456,6 +563,12 @@ function renderCardPhotos(node, fotos) {
     img.alt = '';
     container.appendChild(img);
   });
+}
+
+function renderMercVideo(node, listing) {
+  const video = node.querySelector('.merc-video');
+  if (!listing.video) { video.remove(); return; }
+  video.src = listing.video;
 }
 
 function renderDocLine(node, listing) {
@@ -912,6 +1025,7 @@ function mercRender() {
     renderOwnerYape(node, listing);
 
     renderCardPhotos(node, listing.fotos || (listing.foto ? [listing.foto] : []));
+    renderMercVideo(node, listing);
 
     const tipoBadge = node.querySelector('.tipo-badge');
     tipoBadge.textContent = listing.tipo === 'vendo' ? 'Vendo' : 'Busco comprar';
@@ -972,6 +1086,7 @@ function openMercModalForCreate() {
   hideOtroFieldsIn('mercForm');
   updateZonaOtroVisibility('mercZona', 'mercZonaOtroField');
   mercPhotoPicker.reset();
+  mercVideoPicker.reset();
   updatePrecioFields();
   document.getElementById('mercModalTitle').textContent = 'Publicar mercadería';
   document.getElementById('mercSubmitBtn').textContent = 'Publicar';
@@ -1008,6 +1123,7 @@ function openMercModalForEdit(listing) {
   document.getElementById('mercUrgente').checked = listing.urgente;
 
   mercPhotoPicker.set(listing.fotos || (listing.foto ? [listing.foto] : []));
+  mercVideoPicker.set(listing.video);
 
   updateZonaOtroVisibility('mercZona', 'mercZonaOtroField');
   document.getElementById('mercModalTitle').textContent = 'Editar publicación';
@@ -1041,6 +1157,7 @@ function initMercForm() {
   wireOtroToggle('mercModalidadVentaChips', 'mercModalidadVentaOtroField');
 
   mercPhotoPicker = makePhotoPicker('mercFoto', 'mercFotoPreviewList', 'mercFotoLabel', 'mercFotoConfirmWrap');
+  mercVideoPicker = makeVideoPicker('mercVideo', 'mercVideoPreview', 'mercVideoLabel', 'mercVideoConfirmWrap');
 
   document.querySelector('#mercForm .yape-confirm-link').addEventListener('click', (e) => {
     e.preventDefault();
@@ -1071,6 +1188,23 @@ function initMercForm() {
     const doc = parseDocumento(document.getElementById('mercDocumento').value);
     if (doc === null) { alert('El DNI debe tener 8 dígitos y el RUC 11. Déjalo vacío si prefieres no ponerlo.'); return; }
 
+    const mercSubmitBtn = document.getElementById('mercSubmitBtn');
+    let videoUrl = mercVideoPicker.getExistingUrl();
+    const videoFile = mercVideoPicker.getFile();
+    if (videoFile) {
+      const originalBtnText = mercSubmitBtn.textContent;
+      mercSubmitBtn.disabled = true;
+      mercSubmitBtn.textContent = 'Subiendo video...';
+      const videoResult = await uploadMercVideo(videoFile);
+      mercSubmitBtn.textContent = originalBtnText;
+      if (!videoResult.ok) {
+        mercSubmitBtn.disabled = false;
+        alert('No se pudo subir el video.' + (videoResult.message ? `\n\nDetalle: ${videoResult.message}` : ' Revisa tu conexión e intenta de nuevo.'));
+        return;
+      }
+      videoUrl = videoResult.url;
+    }
+
     const data = {
       tipo: document.querySelector('input[name="mercTipo"]:checked').value,
       items: resolveChipValues('mercItemChips', 'mercItemOtro'),
@@ -1087,6 +1221,7 @@ function initMercForm() {
       descripcion: document.getElementById('mercDescripcion').value.trim(),
       urgente: document.getElementById('mercUrgente').checked,
       fotos: mercPhotoPicker.get(),
+      video: videoUrl,
       documento: doc.valor,
       documentoTipo: doc.tipo,
     };
@@ -1100,7 +1235,6 @@ function initMercForm() {
       listingToSave = { id: newId, ...data, fecha: Date.now(), vence: Date.now() + DIAS_GRATIS * 86400000, destacado: false };
     }
 
-    const mercSubmitBtn = document.getElementById('mercSubmitBtn');
     mercSubmitBtn.disabled = true;
     const result = await saveMercListing(listingToSave);
     mercSubmitBtn.disabled = false;
